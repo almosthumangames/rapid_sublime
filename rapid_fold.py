@@ -92,7 +92,7 @@ class FindBlock(sublime_plugin.TextCommand):
 				line = self.view.full_line(region)
 				line_contents = self.view.substr(line)
 
-				print("Indentation level: " + self.view.indentation_level(line.begin()))
+				#print("Indentation level: " + self.view.indentation_level(line.begin()))
 				
 				if line_contents.find("\t") == 0 or line_contents.startswith('function') or line_contents.startswith('end'):
 					start_row = current_row

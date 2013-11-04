@@ -71,7 +71,9 @@ class RapidConnectionThread(threading.Thread):
 
 class RapidEvalCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
-		print("Rapid Eval command")
+		#Check server and start it if needed
+		RapidConnect()
+
 		RapidConnectionThread.checkConnection()
 		line_contents = self.getLines()
 		RapidConnectionThread.instance.sendString(line_contents)
@@ -268,10 +270,8 @@ class RapidConnect():
 			rapid_debug_search = re.search(r'rapid_d.exe', rapid_debug.decode("ISO-8859-1"))
 			if rapid_debug_search == None:
 				rapid_running = False
-				RapidOutputView.printMessage("Rapid.exe is not running")
 
 		if rapid_running:
-			RapidOutputView.printMessage("Rapid.exe already running")
 			return
 
 		RapidOutputView.printMessage("Starting rapid.exe")

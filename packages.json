@@ -1,12 +1,9 @@
 {
-    "schema_version": "2.0",
-    "packages": [
+    "name": "Rapid",
+    "details": "https://github.com/almosthumangames/rapid_sublime",
+    "releases": [
         {
-            "name": "Rapid",
-            "description": "Almost Human Ltd. rapid development environment plugin",
-            "author": "Scam249",
-            "homepage": "https://github.com/almosthumangames/rapid_sublime",
-            "last_modified": "2013-11-04 12:52:00",
+            "details": "https://github.com/almosthumangames/rapid_sublime"
         }
     ]
 }

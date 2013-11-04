@@ -1,0 +1,7 @@
+[
+	{
+		"button": "button1", "count": 2,
+		"press_command": "drag_select",
+		"command": "rapid_double_click"
+	}
+]

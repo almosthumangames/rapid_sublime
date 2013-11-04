@@ -1,0 +1,33 @@
+Rapid Sublime v.1.0 TODO:
+------------------------
+Must have:
+- F4 inside a function ignores empty lines
+- Load st packages from custom location? (google) -> seems to not to be possible
+- Key bindings etc. to preferences -> package settings -> Rapid
+
+Nice to have:
+- F4 unfolding leaves empty row between functions (if surrounding functions are folded)
+- Colors in "Server Output Window"
+- Mouse folding to work like F4
+- Lua snippets
+
+v.2.0 stuff
+-----------
+- Autocomplete method variables
+- better help with F1 
+- debugger?
+
+DONE:
+-----
+- Highlight trace row when double clicking (done: underline)
+- Stack trace traveling
+- "Fold all" folds functions in a more compact space
+- "Fold all" folds only blocks which start with "function()" 
+- "Server Output Window" opens always in group 2
+- Remove empty line from Server Output Window
+- When looking an open file, check all Sublime windows, not just active one (in all cases)
+- F1 (show methods)
+- F4 breaks if no "end" (0 indent line) is found
+- hlsl syntax highlighting (hlsl package works after closing and starting ST3)
+- Stacktrace: try to find files from all folders (in all windows)
+- Check project start file from all folders (in all windows) [if multiple project files are in project, the first is used ]

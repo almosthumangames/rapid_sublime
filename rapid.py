@@ -4,6 +4,7 @@ import time
 import threading
 import os
 import subprocess
+import re
 
 from .edit import Edit
 from .rapid_output import RapidOutputView
@@ -32,7 +33,7 @@ class RapidConnectionThread(threading.Thread):
 		self.running = True
 		dataQueue = []
 
-		RapidOutputView.printMessage("Thread started\n")
+		RapidOutputView.printMessage("Thread started")
 		try:
 			while True:
 				data = self.sock.recv(1).decode()
@@ -181,6 +182,9 @@ class RapidSettings():
 			return self.project_settings["StartupProject"]
 		return ""
 
+	def getStartupPath(self):
+		return self.path
+
 	def getStartupFilePath(self):
 		path = ""
 		if self.startupProjectExists():
@@ -198,7 +202,8 @@ class RapidSettings():
 
 class RapidCheckServerAndStartupProjectCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
-		print("RapidCheckServerAndStartupProjectCommand")
+		self.view.run_command('rapid_output_view_clear')
+
 		#Check server and start it if needed
 		RapidConnect()
 
@@ -206,9 +211,15 @@ class RapidCheckServerAndStartupProjectCommand(sublime_plugin.TextCommand):
 		startup_exists = False
 		is_modified = False
 
+		RapidOutputView.printMessage("Loading project settings...")
 		settings = RapidSettings()
 
+		#RapidOutputView.printMessage("Change directory to: " + settings.getStartupPath())
+		#os.chdir(settings.getStartupPath())
+
+
 		startup_path = settings.getStartupFilePath()
+
 		if startup_path:
 			startup_exists = True
 			new_view = self.view.window().find_open_file(startup_path)
@@ -218,7 +229,7 @@ class RapidCheckServerAndStartupProjectCommand(sublime_plugin.TextCommand):
 			is_modified = True
 
 		#clear output window
-		self.view.run_command('rapid_output_view_clear')
+		#self.view.run_command('rapid_output_view_clear')
 
 		#Send commands to server accordingly
 		RapidConnectionThread.checkConnection()
@@ -246,14 +257,30 @@ class RapidCheckServerAndStartupProjectCommand(sublime_plugin.TextCommand):
 
 class RapidConnect():
 	def __init__(self):
-		dirname = os.path.dirname(os.path.abspath(__file__))
-		subprocess.call([dirname + "\check_rapid.bat"])
+		rapid_running = True
+
+		rapid = subprocess.check_output("tasklist /FI \"IMAGENAME eq rapid.exe\" /FO CSV")
+		#print(rapid)
+		rapid_search = re.search(r'rapid.exe', rapid.decode("ISO-8859-1"))
+		if rapid_search == None:
+			rapid_debug = subprocess.check_output("tasklist /FI \"IMAGENAME eq rapid_d.exe\" /FO CSV")
+			#print(rapid_debug)
+			rapid_debug_search = re.search(r'rapid_d.exe', rapid_debug.decode("ISO-8859-1"))
+			if rapid_debug_search == None:
+				rapid_running = False
+				RapidOutputView.printMessage("Rapid.exe is not running")
+
+		if rapid_running:
+			RapidOutputView.printMessage("Rapid.exe already running")
+			return
+
+		RapidOutputView.printMessage("Starting rapid.exe")
+		subprocess.Popen(r'c:\Work\projects\rapid\rapid.exe', cwd=r'c:\Work\projects\rapid')
 
 # DEBUGGING STUFF, REMOVE AFTER DEVELOPMENT!!!
 
 #For debugging use only, kill rapid exe instantly
 class RapidKillCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
-		dirname = os.path.dirname(os.path.abspath(__file__))
-		subprocess.call([dirname + "\kill_rapid.bat"])
+		subprocess.call("taskkill /F /IM rapid.exe")
 		RapidOutputView.printMessage("Server disconnected")

@@ -1,5 +1,8 @@
 import sublime, sublime_plugin
 
+import re
+import subprocess
+
 def fold_region_from_indent(view, r):
 	if r.b == view.size():
 		return sublime.Region(r.a - 1, r.b)
@@ -12,8 +15,29 @@ def fold_region_from_indent(view, r):
 
 class RapidTestCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
-		current_row  = self.view.rowcol(self.view.sel()[0].begin())[0]
-		print("Current row: " + str(current_row))		
+		#current_row  = self.view.rowcol(self.view.sel()[0].begin())[0]
+		#print("Current row: " + str(current_row))		
+		print("test")
+		rapid_running = True
+
+		rapid = subprocess.check_output("tasklist /FI \"IMAGENAME eq rapid.exe\" /FO CSV")
+		print(rapid)
+		rapid_search = re.search(r'rapid.exe', rapid.decode("ISO-8859-1"))
+		if rapid_search == None:
+			rapid_debug = subprocess.check_output("tasklist /FI \"IMAGENAME eq rapid_d.exe\" /FO CSV")
+			print(rapid_debug)
+			rapid_debug_search = re.search(r'rapid_d.exe', rapid_debug.decode("ISO-8859-1"))
+			if rapid_debug_search == None:
+				rapid_running = False
+				print("Rapid is not running")
+
+		if rapid_running:
+			print("Rapid already running")
+			return
+
+		print("Starting rapid")
+		subprocess.call("C:\Work\projects\\rapid\\rapid.exe")
+
 
 class RapidFoldAllCommand(sublime_plugin.TextCommand):
 	def run(self, edit):

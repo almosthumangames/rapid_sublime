@@ -7,8 +7,8 @@
         { "keys": ["f1"], "command": "rapid_help" },
         { "keys": ["ctrl+shift+x"], "command": "rapid_output_view_clear" }, 
               
-        {  "keys": ["f3"], "command": "rapid_kill" },   
-        {  "keys": ["f2"], "command": "rapid_test" },  
+        { "keys": ["f3"], "command": "rapid_kill" },   
+        { "keys": ["f2"], "command": "rapid_test" },  
 		{ "keys": ["ctrl+shift+]"], "command": "unfold" },
 		{ "keys": ["ctrl+shift+c"], "command": "show_panel", "args": {"panel": "console", "toggle": true} }
     ] 

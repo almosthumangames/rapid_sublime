@@ -18,21 +18,21 @@
                             {
                                 "command": "open_file", "args":
                                 {
-                                    "file": "${packages}/Rapid/Default (Windows).sublime-keymap"
+                                    "file": "${packages}/rapid_sublime/Default (Windows).sublime-keymap"
                                 },
                                 "caption": "Key mappings"
                             },
                             {
                                 "command": "open_file", "args":
                                 {
-                                    "file": "${packages}/Rapid/Default (Windows).sublime-mousemap"
+                                    "file": "${packages}/rapid_sublime/Default (Windows).sublime-mousemap"
                                 },
                                 "caption": "Mouse mappings"
                             },
                             {
                                 "command": "open_file", "args":
                                 {
-                                    "file": "${packages}/Rapid/Rapid.sublime-settings"
+                                    "file": "${packages}/rapid_sublime/Rapid.sublime-settings"
                                 },
                                 "caption": "Settings – Default"
                             },

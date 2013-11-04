@@ -1,5 +1,0 @@
-Installed Rapid plugin v. 0.0.3
-
-- New features:
----------------
-- Fold/unfold with F4 now works

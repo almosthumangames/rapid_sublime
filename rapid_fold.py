@@ -1,42 +1,19 @@
 import sublime, sublime_plugin
 
-import re
-import subprocess
-
-def fold_region_from_indent(view, r):
+def fold_region_from_indent(view, r, include_empty_line):
 	if r.b == view.size():
 		return sublime.Region(r.a - 1, r.b)
-	else:
+	elif include_empty_line:
 	   	(end_row, end_col) = view.rowcol(r.end())
 	   	line = view.line(view.text_point(end_row, 0))
 	   	end_point = view.text_point(end_row, line.size())
 	   	return sublime.Region(r.a - 1, end_point+1)
-
-
-class RapidTestCommand(sublime_plugin.TextCommand):
-	def run(self, edit):
-		#current_row  = self.view.rowcol(self.view.sel()[0].begin())[0]
-		#print("Current row: " + str(current_row))		
-		print("test")
-		rapid_running = True
-
-		rapid = subprocess.check_output("tasklist /FI \"IMAGENAME eq rapid.exe\" /FO CSV")
-		print(rapid)
-		rapid_search = re.search(r'rapid.exe', rapid.decode("ISO-8859-1"))
-		if rapid_search == None:
-			rapid_debug = subprocess.check_output("tasklist /FI \"IMAGENAME eq rapid_d.exe\" /FO CSV")
-			print(rapid_debug)
-			rapid_debug_search = re.search(r'rapid_d.exe', rapid_debug.decode("ISO-8859-1"))
-			if rapid_debug_search == None:
-				rapid_running = False
-				print("Rapid is not running")
-
-		if rapid_running:
-			print("Rapid already running")
-			return
-
-		print("Starting rapid")
-		subprocess.call("C:\Work\projects\\rapid\\rapid.exe")
+	else:
+		print("should fold without empty line at the end")
+		(end_row, end_col) = view.rowcol(r.end())
+		line = view.line(view.text_point(end_row, 0))
+		end_point = view.text_point(end_row, line.size())
+		return sublime.Region(r.a - 1, end_point)
 
 
 class RapidFoldAllCommand(sublime_plugin.TextCommand):
@@ -52,7 +29,7 @@ class RapidFoldAllCommand(sublime_plugin.TextCommand):
 					row = self.view.rowcol(tp)[0]
 					previous_line = self.view.full_line(self.view.text_point(row-1, 0))
 					if self.view.substr(previous_line).startswith('function'):
-						r = fold_region_from_indent(self.view, s)
+						r = fold_region_from_indent(self.view, s, True)
 						folds.append(r)
 						tp = s.b
 						continue;
@@ -66,6 +43,48 @@ class RapidUnfoldAllCommand(sublime_plugin.TextCommand):
 		self.view.unfold(sublime.Region(0, self.view.size()))
 		self.view.show(self.view.sel())
 
+class RapidTestCommand(sublime_plugin.TextCommand):
+	def run(self, edit):
+		print("RapidFoldUnfold test")
+		'''
+		cursor_position = self.view.sel()[0].begin()
+		cursor_line = self.view.line(cursor_position)
+
+
+		#check folding cases
+		if self.view.indentation_level(cursor_position) == 0:
+			if self.view.substr(cursor_line).startswith('function'):
+				print("cursor is at the beginning of function")
+			elif self.view.substr(cursor_line).startswith('end'):
+				print("cursor is at the end of function")
+		elif self.view.indentation_level(cursor_position) > 0:
+			print("cursor is inside indented block")
+		else:
+			print("fold/unfold not possible")
+			return
+
+		folds = []
+		tp = 0
+		size = self.view.size()
+
+		while tp < size:
+			if self.view.indentation_level(tp) == 1:
+				s = self.view.indented_region(tp)
+				if not s.empty():
+					row = self.view.rowcol(tp)[0]
+					previous_line = self.view.full_line(self.view.text_point(row-1, 0))
+					if s.contains(cursor_line) and self.view.substr(previous_line).startswith('function'):
+						print("zzz")
+					else:
+						print("yyy")
+						
+					
+					print("----")
+					print("Region to be folded: " + self.view.substr(s))
+
+			tp = self.view.full_line(tp).b'''
+		
+
 class RapidFoldUnfoldCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		f = FindBlock(self.view)
@@ -73,13 +92,37 @@ class RapidFoldUnfoldCommand(sublime_plugin.TextCommand):
 		if not region.empty():
 			#line_str = self.view.substr(region)
 			#print(line_str)
+			is_folding = True
+
 			unfolded = self.view.unfold(region)
 			if len(unfolded) == 0:
 				self.view.fold(region)
 			else:
-				print("TODO")
-				#find previous block region, check if it is folded
-				#if it is, just unfold and fold it without empty line at the bottom 
+				is_folding = False
+
+
+			row, col = self.view.rowcol(region.begin())
+			prev_line = self.view.line(self.view.text_point(row-1, 0))
+			prev_prev_line = self.view.line(self.view.text_point(row-2, 0))
+
+			#check if the lines above contain another function
+			if self.view.substr(prev_line).strip() == "" and self.view.substr(prev_prev_line).strip() == "end":
+				#print("prev line: " + self.view.substr(prev_line))
+				#print("prev_prev line: " + self.view.substr(prev_prev_line))
+				fold_result = self.view.unfold(prev_prev_line)
+				#print("Fold result " + str(fold_result))
+
+				tp = self.view.text_point(row-3, 0)
+				#print("prev_prev_prev line: " + self.view.substr(self.view.line(tp)))
+				#print("prev_prev_prev line indent level: " + str(self.view.indentation_level(tp)) )
+				if self.view.indentation_level(tp) > 0:
+					new_fold_region = self.view.indented_region(tp)
+					print(self.view.substr(new_fold_region))
+					if is_folding:
+						r = fold_region_from_indent(self.view, new_fold_region, True)
+					else:
+						r = fold_region_from_indent(self.view, new_fold_region, False)
+					self.view.fold(r)
 
 class FindBlock(sublime_plugin.TextCommand):
 	def getLines(self):
@@ -91,10 +134,8 @@ class FindBlock(sublime_plugin.TextCommand):
 			if region.empty():
 				line = self.view.full_line(region)
 				line_contents = self.view.substr(line)
-
-				#print("Indentation level: " + self.view.indentation_level(line.begin()))
-				
-				if line_contents.find("\t") == 0 or line_contents.startswith('function') or line_contents.startswith('end'):
+	
+				if self.view.indentation_level(line.begin()) > 0 or line_contents.startswith('function') or line_contents.startswith('end'):
 					start_row = current_row
 					end_row = current_row
 					index = 1
@@ -110,7 +151,7 @@ class FindBlock(sublime_plugin.TextCommand):
 						start_row = current_row - index
 						start_line = self.view.full_line(self.view.text_point(start_row, 0))
 						start_line_contents = self.view.substr(start_line)
-						if start_line_contents.find("\t") != 0 and start_line_contents.strip() != '':
+						if self.view.indentation_level(start_line.begin()) == 0 and start_line_contents.strip() != '':
 							block_start = True
 						else:
 							index = index + 1
@@ -124,7 +165,7 @@ class FindBlock(sublime_plugin.TextCommand):
 						end_row = current_row + index
 						end_line = self.view.full_line(self.view.text_point(end_row, 0))
 						end_line_contents = self.view.substr(end_line)
-						if (end_line_contents.find("\t") != 0 and end_line_contents.strip() != '') or self.view.text_point(end_row, end_line.end()) == self.view.size():
+						if  (self.view.indentation_level(end_line.begin()) == 0 and end_line_contents.strip() != '') or self.view.text_point(end_row, end_line.end()) == self.view.size():
 							block_end = True
 						else:
 							index = index + 1

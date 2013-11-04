@@ -122,9 +122,10 @@ class RapidEvalCommand(sublime_plugin.TextCommand):
 					block_region = sublime.Region(start_offset, end_offset)
 					line = self.view.full_line(block_region)
 
-					if start_line_contents.startswith("function"):
-						msg = "Updating " + start_line_contents
-						RapidOutputView.printMessage(msg)
+					file_row = start_row
+					msg = "Updating " + start_line_contents
+					RapidOutputView.printMessage(msg)
+
 				else:
 					line = self.view.line(region) #expand the region for full line if no selection
 			else:

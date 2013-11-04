@@ -4,11 +4,11 @@
 SET RAPID=C:\Work\projects\rapid\rapid.exe
 
 for /f %%i in ("%0") do set curpath=%%~dpi
-cd /d %curpath% 
-
-tasklist /FI "IMAGENAME eq rapid.exe" /FO CSV > search.log
+cd /d %curpath%
+ 
+tasklist /FI "IMAGENAME eq rapid.exe" /FO CSV > search.lo
 FINDSTR rapid.exe search.log > found.log
-FOR /F %%A IN (found.log) DO IF %%~zA EQU 0 GOTO end
+FOR /F %%A IN (found.log) DO IF %%~zA EQU 0 GOTO en
    
 tasklist /FI "IMAGENAME eq rapid_d.exe" /FO CSV > search.log
 FINDSTR rapid_d.exe search.log > found.log

@@ -53,7 +53,6 @@ class RapidOutputViewClearCommand(sublime_plugin.TextCommand):
 		with Edit(output) as edit:
 			edit.erase(sublime.Region(0, output.size()))
 
-
 class RapidOutputViewListener(sublime_plugin.EventListener):
 	def on_close(self, view):
 		if view.name() == RapidOutputView.name:

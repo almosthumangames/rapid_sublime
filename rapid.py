@@ -129,7 +129,7 @@ class RapidEvalCommand(sublime_plugin.TextCommand):
 					line = self.view.full_line(block_region)
 
 					file_row = start_row
-					print("Sending: " + str(file_row))
+					#print("Sending: " + str(file_row))
 					msg = "Updating " + start_line_contents
 					RapidOutputView.printMessage(msg)
 					file_row_str = str(file_row + 1)
@@ -147,7 +147,7 @@ class RapidEvalCommand(sublime_plugin.TextCommand):
 			
 			line_str = self.view.substr(line)
 			line_contents = "@" + file_name + ":" + file_row_str + "\n" + line_str + "\000"
-			print(line_contents)
+			#print(line_contents)
 			return line_contents
 
 class RapidSettings():

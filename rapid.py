@@ -8,7 +8,6 @@ import re
 
 from .edit import Edit
 from .rapid_output import RapidOutputView
-from .rapid_output import RapidOutputView2
 
 # to run execute from the console:
 # view.run_command('rapid_eval')
@@ -35,7 +34,6 @@ class RapidConnectionThread(threading.Thread):
 		dataQueue = []
 
 		RapidOutputView.printMessage("Thread started")
-		RapidOutputView2.printMessage("Thread started")
 		try:
 			while True:
 				data = self.sock.recv(1).decode()

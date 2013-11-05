@@ -5,6 +5,7 @@
         { "keys": ["alt+o"], "command": "rapid_unfold_all" },
         { "keys": ["alt+c"], "command": "rapid_fold_all" },
         { "keys": ["f1"], "command": "rapid_help" },
+        { "keys": ["ctrl+t"], "command": "rapid_resume" },
         { "keys": ["ctrl+shift+x"], "command": "rapid_output_view_clear" }, 
               
         { "keys": ["f3"], "command": "rapid_kill" },   

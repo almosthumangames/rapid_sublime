@@ -9,6 +9,8 @@ import re
 from .edit import Edit
 from .rapid_output import RapidOutputView
 
+global_socket = None
+
 # to run execute from the console:
 # view.run_command('rapid_eval')
 class RapidConnectionThread(threading.Thread):
@@ -64,16 +66,20 @@ class RapidConnectionThread(threading.Thread):
 	@staticmethod
 	def checkConnection():
 		if RapidConnectionThread.instance == None:
+			RapidConnect()
 			RapidConnectionThread().start()
 		elif not RapidConnectionThread.instance.isRunning():
 			RapidConnectionThread.instance.join()
+			RapidConnect()
 			RapidConnectionThread().start()
+
+class RapidResumeCommand(sublime_plugin.TextCommand):
+	def run(self, edit):
+		RapidConnectionThread.checkConnection()
+		RapidConnectionThread.instance.sendString("\nsys.resume()\000")
 
 class RapidEvalCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
-		#Check server and start it if needed
-		RapidConnect()
-
 		RapidConnectionThread.checkConnection()
 		line_contents = self.getLines()
 		RapidConnectionThread.instance.sendString(line_contents)
@@ -123,21 +129,25 @@ class RapidEvalCommand(sublime_plugin.TextCommand):
 					line = self.view.full_line(block_region)
 
 					file_row = start_row
+					print("Sending: " + str(file_row))
 					msg = "Updating " + start_line_contents
 					RapidOutputView.printMessage(msg)
-
+					file_row_str = str(file_row + 1)
 				else:
 					line = self.view.line(region) #expand the region for full line if no selection
+					file_row_str = str(current_row + 1)
 			else:
 				line = region #get only the selected area
+				file_row_str = str(current_row + 1)
 
 			file_name = ""
 
 			if self.view.file_name() != None:
 				file_name = self.view.file_name().split("\\")[-1]
-			file_row = str(current_row + 1)
+			
 			line_str = self.view.substr(line)
-			line_contents = "@" + file_name + ":" + file_row + "\n" + line_str + "\000"
+			line_contents = "@" + file_name + ":" + file_row_str + "\n" + line_str + "\000"
+			print(line_contents)
 			return line_contents
 
 class RapidSettings():
@@ -205,10 +215,13 @@ class RapidSettings():
 
 class RapidCheckServerAndStartupProjectCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
+		print("Rapid Check Server")
+
 		self.view.run_command('rapid_output_view_clear')
 
+
 		#Check server and start it if needed
-		RapidConnect()
+		#RapidConnect()
 
 		#Check if startup project exists and if it has been modified
 		startup_exists = False

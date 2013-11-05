@@ -35,6 +35,7 @@ class RapidOutputView():
 				#output.settings().set('server_output', True)
 		return RapidOutputView.output
 
+
 	@staticmethod
 	def printMessage(msg):
 		output = RapidOutputView.getOutputView()	
@@ -117,3 +118,35 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 					view = file_window.open_file(path+":"+file_row, sublime.ENCODED_POSITION)
 					#print("File name: " + view.file_name())
 
+#STUFF UNDER TESTING, BREAKS EVERYTHING, HANDLE WITH CARE!
+
+class RapidOutputView2():
+	name = "Server Output View"
+	output = None
+
+	@staticmethod
+	def getOutputView():
+		if RapidOutputView2.output == None:
+			RapidOutputView2.output = sublime.windows()[0].get_output_panel("server_output")
+		return RapidOutputView2.output
+			
+	@staticmethod
+	def printMessage(msg):
+		print("rapid output view 2 print message")
+		output = RapidOutputView2.getOutputView()
+		print("rapid output view 2 got view")
+		view = sublime.active_window().active_view()
+		print("rapid output view 2 show panel")
+		view.run_command("show_panel", {"panel": "output.server_output"})
+		view.set_read_only(False)
+		view.run_command("append", { "characters": msg })
+		view.set_read_only(True)
+
+class RapidTest2Command(sublime_plugin.WindowCommand):
+	def run(self):
+		self.output_view = self.window.get_output_panel("server_output")
+		self.window.run_command("show_panel", {"panel": "output.server_output"})
+
+		self.output_view.set_read_only(False)
+		self.output_view.run_command("append", { "characters": "Hello World!" })
+		self.output_view.set_read_only(True)

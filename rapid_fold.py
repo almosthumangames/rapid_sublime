@@ -29,7 +29,8 @@ class RapidFoldAllCommand(sublime_plugin.TextCommand):
 					row = self.view.rowcol(tp)[0]
 					previous_line = self.view.full_line(self.view.text_point(row-1, 0))
 					if self.view.substr(previous_line).startswith('function'):
-						r = fold_region_from_indent(self.view, s, True)
+						should_include_newline = self.checkFunctionBelow(s)
+						r = fold_region_from_indent(self.view, s, should_include_newline)
 						folds.append(r)
 						tp = s.b
 						continue;
@@ -38,30 +39,45 @@ class RapidFoldAllCommand(sublime_plugin.TextCommand):
 		self.view.fold(folds)
 		sublime.status_message("Folded " + str(len(folds)) + " regions")
 
+	def checkFunctionBelow(self, region):
+		row, col = self.view.rowcol(region.end())
+		next_line = self.view.line(self.view.text_point(row+1, 0))
+		next_next_line = self.view.line(self.view.text_point(row+2, 0))
+
+		if self.view.substr(next_next_line).startswith("function"):
+			return True
+		else:
+			return False
+
 class RapidUnfoldAllCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		self.view.unfold(sublime.Region(0, self.view.size()))
 		self.view.show(self.view.sel())
 
-class RapidTestCommand(sublime_plugin.TextCommand):
+class RapidFoldUnfoldCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
-		print("RapidFoldUnfold test")
-		'''
 		cursor_position = self.view.sel()[0].begin()
 		cursor_line = self.view.line(cursor_position)
 
-
 		#check folding cases
+		cursor_at_beginning = False
+		cursor_at_end = False
+		cursor_at_indent = False
+
 		if self.view.indentation_level(cursor_position) == 0:
 			if self.view.substr(cursor_line).startswith('function'):
-				print("cursor is at the beginning of function")
+				cursor_at_beginning = True
+				#print("cursor is at the beginning of function")
 			elif self.view.substr(cursor_line).startswith('end'):
-				print("cursor is at the end of function")
+				cursor_at_end = True
+				#print("cursor is at the end of function")
+			else:
+				#print("fold/unfold not possible")
+				return
 		elif self.view.indentation_level(cursor_position) > 0:
-			print("cursor is inside indented block")
-		else:
-			print("fold/unfold not possible")
-			return
+			cursor_at_indent = True
+			#print("cursor is inside indented block")
+
 
 		folds = []
 		tp = 0
@@ -71,127 +87,75 @@ class RapidTestCommand(sublime_plugin.TextCommand):
 			if self.view.indentation_level(tp) == 1:
 				s = self.view.indented_region(tp)
 				if not s.empty():
+					
 					row = self.view.rowcol(tp)[0]
+
 					previous_line = self.view.full_line(self.view.text_point(row-1, 0))
-					if s.contains(cursor_line) and self.view.substr(previous_line).startswith('function'):
-						print("zzz")
-					else:
-						print("yyy")
-						
-					
-					print("----")
-					print("Region to be folded: " + self.view.substr(s))
 
-			tp = self.view.full_line(tp).b'''
-		
+					#TODO: fold/unfold at the end of the block
 
-class RapidFoldUnfoldCommand(sublime_plugin.TextCommand):
-	def run(self, edit):
-		f = FindBlock(self.view)
-		region = f.getLines()
-		if not region.empty():
-			line_str = self.view.substr(region)
-			print(line_str)
+					region_found = False
+					if ( s.contains(cursor_line) and self.view.substr(previous_line).startswith('function') or
+						 cursor_at_beginning and previous_line.contains(cursor_line) ): 
+						 #cursor_at_end and next_line.contains(cursor_line) ):
+						region_found = True
 
-			is_folding = True
+					if region_found:
+						#print("---")
+						#print(self.view.substr(s))
+						#print("prev line: " + self.view.substr(previous_line))
+						#print("---")
+						unfolded = self.view.unfold(s)
+						if len(unfolded) == 0:
+							#folding
+							self.checkPrevBlock(s, True)
+							should_include_newline = self.checkNextBlockWhenFolding(s)
+							r = fold_region_from_indent(self.view, s, should_include_newline)
+							self.view.fold(r)
+						else:
+							#unfolding
+							self.checkPrevBlock(s, False)
 
-			unfolded = self.view.unfold(region)
-			if len(unfolded) == 0:
-				'''
-				row, col = self.view.rowcol(region.end())
-				next_line = self.view.line(self.view.text_point(row+1, 0))
-				next_next_line = self.view.line(self.view.text_point(row+2, 0))
-				print("Next line is: " + self.view.substr(next_line))
-				print("Next next line is: " + self.view.substr(next_next_line))
+			tp = self.view.full_line(tp).b
 
-				if self.view.substr(next_line).startswith("function"):
-					
-					prev_line = self.view.line(self.view.text_point(row-1, 0))
-					r = sublime.Region(region.begin(), self.view.text_point(row-1, prev_line.size()))
-					self.view.fold(r)
-					'''	
-				self.view.fold(region)
+	def checkNextBlockWhenFolding(self, region):
+		#check if the lines below contain another function
+		row, col = self.view.rowcol(region.end())
+		next_line = self.view.line(self.view.text_point(row+1, 0))
+		next_next_line = self.view.line(self.view.text_point(row+2, 0))
+
+		#print("next line: " + self.view.substr(next_line))
+		#print("next next line: " + self.view.substr(next_next_line))
+
+		if self.view.substr(next_line).strip() == "" and self.view.substr(next_next_line).startswith("function"):
+			unfold_result = self.view.unfold(self.view.line(self.view.text_point(row+3, 0)))
+			if len(unfold_result) > 0: 
+				#next block is folded, should be folded back
+				self.view.fold(unfold_result)
+				return True
 			else:
-				is_folding = False
+				#next block is not folded
+				return False
+		return False
 
-			'''
-			#check if the lines above contain another function
-			row, col = self.view.rowcol(region.begin())
-			prev_line = self.view.line(self.view.text_point(row-1, 0))
-			prev_prev_line = self.view.line(self.view.text_point(row-2, 0))
+	def checkPrevBlock(self, region, folding):
+		#check if the lines above contain another function
+		row, col = self.view.rowcol(region.begin())
+		prev_line = self.view.line(self.view.text_point(row-2, 0))
+		prev_prev_line = self.view.line(self.view.text_point(row-3, 0))
 
-			if self.view.substr(prev_line).strip() == "" and self.view.substr(prev_prev_line).strip() == "end":
-				#print("prev line: " + self.view.substr(prev_line))
-				#print("prev_prev line: " + self.view.substr(prev_prev_line))
-				unfold_result = self.view.unfold(prev_prev_line)
-				if len(unfold_result) > 0:
-					tp = self.view.text_point(row-3, 0)
-					#print("prev_prev_prev line: " + self.view.substr(self.view.line(tp)))
-					#print("prev_prev_prev line indent level: " + str(self.view.indentation_level(tp)) )
-					if self.view.indentation_level(tp) > 0:
-						new_fold_region = self.view.indented_region(tp)
-						#print(self.view.substr(new_fold_region))
-						if is_folding:
-							r = fold_region_from_indent(self.view, new_fold_region, True)
-						else:
-							r = fold_region_from_indent(self.view, new_fold_region, False)
-						self.view.fold(r)'''
+		#print("prev line: " + self.view.substr(prev_line))
+		#print("prev prev line: " + self.view.substr(prev_prev_line))
 
-
-class FindBlock(sublime_plugin.TextCommand):
-	def getLines(self):
-		block_region = sublime.Region(0,0)
-		for region in self.view.sel():
-
-			current_row  = self.view.rowcol(self.view.sel()[0].begin())[0]
-
-			if region.empty():
-				line = self.view.full_line(region)
-				line_contents = self.view.substr(line)
-	
-				if self.view.indentation_level(line.begin()) > 0 or line_contents.startswith('function') or line_contents.startswith('end'):
-					start_row = current_row
-					end_row = current_row
-					index = 1
-
-					#find start of the block
-					if line_contents.startswith('function'):
-						block_start = True
-						start_line = self.view.full_line(self.view.text_point(start_row, 0))
+		if self.view.substr(prev_line).strip() == "" and self.view.substr(prev_prev_line).strip() == "end":
+			unfold_result = self.view.unfold(self.view.line(self.view.text_point(row-4, 0)))
+			if len(unfold_result) > 0:
+				#print("prev block is folded, it should include newline to its region")
+				tp = self.view.text_point(row-4, 0)
+				if self.view.indentation_level(tp) > 0:
+					new_fold_region = self.view.indented_region(tp)
+					if folding:
+						r = fold_region_from_indent(self.view, new_fold_region, True)
 					else:
-						block_start = False
-
-					while not block_start:
-						start_row = current_row - index
-						start_line = self.view.full_line(self.view.text_point(start_row, 0))
-						start_line_contents = self.view.substr(start_line)
-						if self.view.indentation_level(start_line.begin()) == 0 and start_line_contents.strip() != '':
-							block_start = True
-						else:
-							index = index + 1
-
-					index = 1
-					if line_contents.startswith('end'): #or self.view.text_point(current_row, line.end()) == self.view.size():
-						print("uuu")
-						print(line_contents)
-						block_end = True
-					else:
-						block_end = False
-
-					while not block_end:
-						end_row = current_row + index
-						end_line = self.view.full_line(self.view.text_point(end_row, 0))
-						end_line_contents = self.view.substr(end_line)
-						if (self.view.indentation_level(end_line.begin()) == 0 and not end_line_contents.strip() != '') or self.view.text_point(end_row, end_line.end()) == self.view.size():
-							print("end found, end line contents: " + end_line_contents)
-							block_end = True
-						else:
-							index = index + 1
-					
-					start_offset = self.view.text_point(start_row, start_line.size()-1)
-					end_offset = self.view.text_point(end_row+1, 0)
-					block_region = sublime.Region(start_offset, end_offset)
-		return block_region
-
-
-
+						r = fold_region_from_indent(self.view, new_fold_region, False)
+					self.view.fold(r)	

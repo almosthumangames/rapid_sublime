@@ -1,17 +1,18 @@
 Rapid Sublime v.1.0 TODO:
 ------------------------
 Must have:
-- open server output view in a console, not in a view
-	- esc shuts down server output view
-	- shutting down server output view shuts down the group
-- rapid.exe path is parsed from grimrock.sublime_proj file
-- F4 inside a function ignores empty lines
+- esc shuts down server output view (use context?)
+- shutting down server output view shuts down the group
 
 Nice to have:
-- F4 unfolding leaves empty row between functions (if surrounding functions are folded)
+- open server output view in a console, not in a view
+- alt+c does not work in search (use contexts?)
+- grimrock.sublime_proj to use json
+	- rapid.exe path is parsed from grimrock.sublime_proj file
 - Colors in "Server Output Window"
-- Mouse folding to work like F4
+- Mouse folding to work like alt+f
 - Lua snippets
+- alt+f inside a function ignores empty lines 
 
 v.2.0 stuff
 -----------
@@ -29,15 +30,19 @@ Fixed between pre-alpha and 0.0.4:
 - Remove empty line from Server Output Window
 - When looking an open file, check all Sublime windows, not just active one (in all cases)
 - F1 (show methods)
-- F4 breaks if no "end" (0 indent line) is found
+- fold block breaks if no "end" (0 indent line) is found
 - hlsl syntax highlighting (hlsl package works after closing and starting ST3)
 - Stacktrace: try to find files from all folders (in all windows)
 - Check project start file from all folders (in all windows) [if multiple project files are in project, the first is used ]
 - Load st packages from custom location? (google) -> seems to not to be possible
 - Key bindings etc. to preferences -> package settings -> Rapid
 
-Fixed in 0.0.5
---------------
+Done in 0.0.5
+----------------------
 - When evaluating block, the number of the first row must be sent to server
 - When evaluating block, the first line of the block is always printed to server output
+- resume (ctrl + t)
+- f1 connects to server if not already connected
 - remove empty line between two folded functions 
+- folding rules now work
+- double click does not work when rapid_sublime is running

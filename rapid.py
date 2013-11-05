@@ -8,8 +8,7 @@ import re
 
 from .edit import Edit
 from .rapid_output import RapidOutputView
-
-global_socket = None
+from .rapid_output import RapidOutputView2
 
 # to run execute from the console:
 # view.run_command('rapid_eval')
@@ -36,6 +35,7 @@ class RapidConnectionThread(threading.Thread):
 		dataQueue = []
 
 		RapidOutputView.printMessage("Thread started")
+		RapidOutputView2.printMessage("Thread started")
 		try:
 			while True:
 				data = self.sock.recv(1).decode()
@@ -77,6 +77,16 @@ class RapidResumeCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		RapidConnectionThread.checkConnection()
 		RapidConnectionThread.instance.sendString("\nsys.resume()\000")
+
+class RapidHelpCommand(sublime_plugin.TextCommand):
+	def run(self, edit):
+		cursor_pos = self.view.sel()[0].begin()
+		region = self.view.word(cursor_pos)
+		word = self.view.substr(region)
+
+		RapidConnectionThread.checkConnection()
+		line = "\nrequire(\"doc\"); doc.find([["+ word +"]])\000"
+		RapidConnectionThread.instance.sendString(line)
 
 class RapidEvalCommand(sublime_plugin.TextCommand):
 	def run(self, edit):

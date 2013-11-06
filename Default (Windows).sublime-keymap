@@ -9,17 +9,20 @@
         ]         
     },
     { "keys": ["f1"], "command": "rapid_help" },
-    { "keys": ["alt+r"], "command": "rapid_resume" },
+    { "keys": ["alt+r"], "command": "rapid_resume", "context":
+        [
+            { "key": "setting.is_widget", "operator": "equal", "operand": false }
+        ]   
+    },
     { "keys": ["alt+x"], "command": "rapid_output_view_clear" }, 
     { "keys": ["escape"], "command": "rapid_close_output_view", "context":
         [
-            { "key": "close_server_output", "operator": "equal", "operand": true }
+            { "key": "close_server_output", "operator": "equal", "operand": true },
+            { "key": "auto_complete_visible", "operator": "equal", "operand": false },
+            { "key": "num_selections", "operator": "equal", "operand": 1 },
+            { "key": "has_next_field", "operator": "equal", "operand": false },
+            { "key": "has_prev_field", "operator": "equal", "operand": false },
+            { "key": "overlay_visible", "operator": "equal", "operand": false }
         ]
-    },
-
-    { "keys": ["ctrl+shift+x"], "command": "rapid_test", "context": 
-    [
-        { "key": "test", "operator": "equal", "operand": false }
-    ]
     }
 ] 

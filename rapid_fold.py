@@ -29,6 +29,19 @@ class RapidFoldAllCommand(sublime_plugin.TextCommand):
 					row = self.view.rowcol(tp)[0]
 					previous_line = self.view.full_line(self.view.text_point(row-1, 0))
 					if self.view.substr(previous_line).startswith('function'):
+
+						#Hack to handle strings spanning multiple lines and breaking indentation 
+						next_line = self.view.full_line(s.end()+1)
+						next_row = self.view.rowcol(next_line.begin())[0]
+						if not self.view.substr(next_line).startswith("end"):
+							end_found = False
+							while not end_found:
+								next_line = self.view.full_line(next_line.end()+1)
+								next_row = self.view.rowcol(next_line.begin())[0]
+								if self.view.substr(next_line).startswith("end") or next_line.end() == self.view.size():
+									s = sublime.Region(s.begin(), next_line.end())
+									end_found = True
+
 						should_include_newline = self.checkFunctionBelow(s)
 						r = fold_region_from_indent(self.view, s, should_include_newline)
 						folds.append(r)
@@ -71,8 +84,24 @@ class RapidFoldUnfoldCommand(sublime_plugin.TextCommand):
 			elif self.view.substr(cursor_line).startswith('end'):
 				cursor_at_end = True
 				#print("cursor is at the end of function")
+			elif self.view.substr(cursor_line).strip() == "":
+				#check here if the cursor is inside a function block
+				row = self.view.rowcol(cursor_position)[0]
+				
+				check_finished = False
+				index = 1
+				while not check_finished:
+					previous_line = self.view.full_line(self.view.text_point(row-index, 0))
+					if self.view.substr(previous_line).startswith("function"):
+						cursor_position = previous_line.begin()
+						cursor_at_beginning = True
+						#print("cursor is inside function block")
+						break
+					elif self.view.substr(previous_line).startswith("end") or previous_line.begin() == 0:
+						#print("cursor is not inside a function block")
+						return
+					index = index + 1
 			else:
-				#print("fold/unfold not possible")
 				return
 		elif self.view.indentation_level(cursor_position) > 0:
 			cursor_at_indent = True
@@ -86,10 +115,21 @@ class RapidFoldUnfoldCommand(sublime_plugin.TextCommand):
 		while tp < size:
 			if self.view.indentation_level(tp) == 1:
 				s = self.view.indented_region(tp)
-				if not s.empty():
-					
-					row = self.view.rowcol(tp)[0]
+				if not s.empty():		
 
+					#Hack to handle strings spanning multiple lines and breaking indentation 
+					next_line = self.view.full_line(s.end()+1)
+					next_row = self.view.rowcol(next_line.begin())[0]
+					if not self.view.substr(next_line).startswith("end"):
+						end_found = False
+						while not end_found:
+							next_line = self.view.full_line(next_line.end()+1)
+							next_row = self.view.rowcol(next_line.begin())[0]
+							if self.view.substr(next_line).startswith("end") or next_line.end() == self.view.size():
+								s = sublime.Region(s.begin(), next_line.end())
+								end_found = True
+
+					row = self.view.rowcol(tp)[0]
 					previous_line = self.view.full_line(self.view.text_point(row-1, 0))
 
 					#TODO: fold/unfold at the end of the block
@@ -101,10 +141,6 @@ class RapidFoldUnfoldCommand(sublime_plugin.TextCommand):
 						region_found = True
 
 					if region_found:
-						#print("---")
-						#print(self.view.substr(s))
-						#print("prev line: " + self.view.substr(previous_line))
-						#print("---")
 						unfolded = self.view.unfold(s)
 						if len(unfolded) == 0:
 							#folding
@@ -115,6 +151,7 @@ class RapidFoldUnfoldCommand(sublime_plugin.TextCommand):
 						else:
 							#unfolding
 							self.checkPrevBlock(s, False)
+						break
 
 			tp = self.view.full_line(tp).b
 

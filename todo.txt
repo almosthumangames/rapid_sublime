@@ -1,27 +1,29 @@
 Rapid Sublime v.1.0 TODO:
 ------------------------
 Must have:
-
+- folding breaks with multiline strings (DungeonEditor.lua)
+	- fold block partially fixed
+		- todo: alt+f working when cursor is on an unintented row inside a function block
+- speed up block folding/unfolding (alt+f)
 
 Nice to have:
-- grimrock.sublime_proj to use json
-	- rapid.exe path is parsed from grimrock.sublime_proj file
-- Colors in "Server Output Window"
-- Mouse folding to work like alt+f
-- Lua snippets
-- alt+f inside a function ignores empty lines 
+- alt+f to work with end lines
+- Lua snippets (?)
 - open server output view in a console, not in a view (is it possible?)
+- Mouse folding to work like alt+f (requires hacking lua.tmlanguage, is it worth it?)
 
 v.2.0 stuff
 -----------
 - Autocomplete method variables
 - better help with F1 
 - debugger?
+- Colors in "Server Output Window"?
 
 Fixed between pre-alpha and 0.0.4:
 ---------------------------------
 - Highlight trace row when double clicking (done: underline)
 - Stack trace traveling
+
 - "Fold all" folds functions in a more compact space
 - "Fold all" folds only blocks which start with "function()" 
 - "Server Output Window" opens always in group 2
@@ -50,3 +52,16 @@ Done in 0.0.6
 - shutting down server output view shuts down the group
 - alt+c works in search 
 - esc shuts down server output view
+
+Done in 0.0.7
+----------------------
+- Project settings are parsed from JSON file
+	- Project settings file extension is *.rapid_sublime
+	- Rapid.exe path is parsed from project settings file
+- Component.lua:50 cursor jumps weirdly when folding a function (could not reproduce this)
+- alt+e should not move focus to server output view
+- esc to close only current context
+- alt+f inside a function should not ignore empty lines 
+- folding breaks with multiline strings (DungeonEditor.lua)
+	- fold all fixed
+	- fold block partially fixed

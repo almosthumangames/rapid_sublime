@@ -32,6 +32,7 @@ class RapidOutputView():
 				RapidOutputView.output.set_read_only(True)
 				RapidOutputView.output.set_scratch(True)
 				RapidOutputView.output.set_name(RapidOutputView.name)
+				sublime.windows()[0].focus_group(0)
 				#output.settings().set('server_output', True)
 		return RapidOutputView.output
 

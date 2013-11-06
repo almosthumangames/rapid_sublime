@@ -8,6 +8,7 @@ import re
 
 from .edit import Edit
 from .rapid_output import RapidOutputView
+from .rapid_parse import RapidSettings
 
 # to run execute from the console:
 # view.run_command('rapid_eval')
@@ -158,78 +159,11 @@ class RapidEvalCommand(sublime_plugin.TextCommand):
 			#print(line_contents)
 			return line_contents
 
-class RapidSettings():
-	def __init__(self):
-		self.path = ""
-		self.full_path = ""
-		self.project_settings = {}
-		
-		project_settings_found = False
-		#Get path to grimrock folder		
-		# Assume that there is only one root folder in the project and the folder is found on sublime.windows[0] 
-		# TODO: if there will be more root folders, the project root must be set in settings file?
-		for window in sublime.windows():
-			for folder in window.folders():
-				for root, dirs, files in os.walk(folder):
-					for name in files:
-						if name.endswith("sublime_proj"):
-							self.full_path = os.path.abspath(os.path.join(root, name))
-							self.path = os.path.dirname(self.full_path)
-							#print("self.path: " + self.path)
-							project_settings_found = True
-							break
-				if project_settings_found:
-					break
-			if project_settings_found:
-				break
-		
-		if self.path != "":
-			with open(self.full_path, "r") as project_settings_file:
-				for line in project_settings_file:
-					(key, val) = line.split("=")
-					self.project_settings[key.strip()] = val.strip()	
-		
-	def getSettings(self):
-		return self.project_settings
-
-	def startupProjectExists(self):
-		if "StartupProject" in self.project_settings:
-			return True
-		RapidOutputView.printMessage(self.project_settings)
-		return False
-
-	def getStartupFileName(self):
-		if self.startupProjectExists():
-			return self.project_settings["StartupProject"]
-		return ""
-
-	def getStartupPath(self):
-		return self.path
-
-	def getStartupFilePath(self):
-		path = ""
-		if self.startupProjectExists():
-			startup_file_name = self.getStartupFileName()
-			path = self.path + "\\" + startup_file_name			
-		return path
-
-	def getStartupFileContent(self):
-		data = ""
-		if self.startupProjectExists():
-			path = self.getStartupFilePath()		
-			with open(path, "r") as startup_project_file:
-				data = startup_project_file.read()
-		return data
-
 class RapidCheckServerAndStartupProjectCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
-		print("Rapid Check Server")
+		#print("Rapid Check Server")
 
 		self.view.run_command('rapid_output_view_clear')
-
-
-		#Check server and start it if needed
-		#RapidConnect()
 
 		#Check if startup project exists and if it has been modified
 		startup_exists = False
@@ -238,11 +172,9 @@ class RapidCheckServerAndStartupProjectCommand(sublime_plugin.TextCommand):
 		RapidOutputView.printMessage("Loading project settings...")
 		settings = RapidSettings()
 
-		#RapidOutputView.printMessage("Change directory to: " + settings.getStartupPath())
-		#os.chdir(settings.getStartupPath())
-
-
+		#RapidOutputView.printMessage("Project settings loaded")
 		startup_path = settings.getStartupFilePath()
+		#RapidOutputView.printMessage("startup_path: " + startup_path)
 
 		if startup_path:
 			startup_exists = True
@@ -252,8 +184,8 @@ class RapidCheckServerAndStartupProjectCommand(sublime_plugin.TextCommand):
 		elif self.view.is_dirty():
 			is_modified = True
 
-		#clear output window
-		#self.view.run_command('rapid_output_view_clear')
+		#RapidOutputView.printMessage("Startup exists: " + str(startup_exists))
+		#RapidOutputView.printMessage("Is modified: " + str(is_modified))
 
 		#Send commands to server accordingly
 		RapidConnectionThread.checkConnection()
@@ -265,9 +197,10 @@ class RapidCheckServerAndStartupProjectCommand(sublime_plugin.TextCommand):
 				line = "@" + settings.getStartupFileName() + ":1\n" + settings.getStartupFileContent() +"\000"
 				RapidConnectionThread.instance.sendString(line)
 			else:
-				RapidOutputView.printMessage("Startup project: " + settings.getStartupFilePath())
+				RapidOutputView.printMessage("Startup project: " + startup_path)
 				#file is either not open or open but unmodified
-				RapidConnectionThread.instance.sendString("\nsys.loadProject([[" + settings.getStartupFilePath() + "]])\000")
+				line = "\nsys.loadProject([[" + startup_path + "]])\000"
+				RapidConnectionThread.instance.sendString(line)
 		else:
 			#if no startup project, run current page
 			if is_modified:
@@ -296,8 +229,13 @@ class RapidConnect():
 		if rapid_running:
 			return
 
+		settings = RapidSettings().getSettings()
+		rapid_path = settings["RapidPath"]
+		rapid_exe = settings["RapidExe"]
+
 		RapidOutputView.printMessage("Starting rapid.exe")
-		subprocess.Popen(r'c:\Work\projects\rapid\rapid.exe', cwd=r'c:\Work\projects\rapid')
+		subprocess.Popen(rapid_path + "\\" + rapid_exe, cwd=rapid_path)
+		#subprocess.Popen(r'c:\Work\projects\rapid\rapid.exe', cwd=r'c:\Work\projects\rapid')
 
 # DEBUGGING STUFF, REMOVE AFTER DEVELOPMENT!!!
 

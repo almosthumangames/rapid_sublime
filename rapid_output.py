@@ -57,12 +57,13 @@ class RapidOutputViewListener(sublime_plugin.EventListener):
 	def on_close(self, view):
 		if view.name() == RapidOutputView.name:
 			RapidOutputView.output = None
+			sublime.windows()[0].set_layout( {"cols": [0.0, 1.0], "rows": [0.0, 1.0], "cells": [[0,0,1,1]] } )
 			#print(view.name() + " was closed")
 
 class RapidDoubleClick(sublime_plugin.WindowCommand):
 	def run(self):
 		view = self.window.active_view()
-		if(view.name() == RapidOutputView.name):
+		if view.name() == RapidOutputView.name:
 			#RapidOutputView.printMessage("Double clicked " + RapidOutputView.name)
 			sel = view.sel()
 			r = sel[0]
@@ -117,3 +118,17 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 					view = file_window.open_file(path+":"+file_row, sublime.ENCODED_POSITION)
 					#print("File name: " + view.file_name())
 
+class RapidCloseOutputViewCommand(sublime_plugin.TextCommand):
+	def run(self, edit):
+		if RapidOutputView.output != None:
+			self.view.window().focus_view(RapidOutputView.output)
+			self.view.window().run_command("close_file")
+
+class RapidOutputEventListener(sublime_plugin.EventListener):
+	def on_query_context(self, view, key, operator, operand, match_all):
+		if key == "close_server_output":
+			for window in sublime.windows():
+				for view in window.views():
+					if view.name() == RapidOutputView.name:
+						return True
+		return False

@@ -3,9 +3,10 @@
     "details": "https://github.com/almosthumangames/rapid_sublime",
     "releases": [
         {
-        	"version": "0.0.5",
+        	"name": "Rapid",
+        	"version": "0.0.6",
             "details": "https://github.com/almosthumangames/rapid_sublime",
-            "date": "2013-11-04"
+            "date": "2013-11-06 10:00:00"
         }
     ]
 }

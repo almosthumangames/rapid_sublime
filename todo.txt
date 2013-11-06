@@ -1,18 +1,16 @@
 Rapid Sublime v.1.0 TODO:
 ------------------------
 Must have:
-- esc shuts down server output view (use context?)
-- shutting down server output view shuts down the group
+
 
 Nice to have:
-- open server output view in a console, not in a view
-- alt+c does not work in search (use contexts?)
 - grimrock.sublime_proj to use json
 	- rapid.exe path is parsed from grimrock.sublime_proj file
 - Colors in "Server Output Window"
 - Mouse folding to work like alt+f
 - Lua snippets
 - alt+f inside a function ignores empty lines 
+- open server output view in a console, not in a view (is it possible?)
 
 v.2.0 stuff
 -----------
@@ -45,4 +43,10 @@ Done in 0.0.5
 - f1 connects to server if not already connected
 - remove empty line between two folded functions 
 - folding rules now work
-- double click does not work when rapid_sublime is running
+- double click works when rapid_sublime is running
+
+Done in 0.0.6
+----------------------
+- shutting down server output view shuts down the group
+- alt+c works in search 
+- esc shuts down server output view

@@ -28,7 +28,8 @@
                                     "file": "${packages}/rapid_sublime/Default (Windows).sublime-mousemap"
                                 },
                                 "caption": "Mouse mappings"
-                            },
+                            }
+                            /*
                             {
                                 "command": "open_file", "args":
                                 {
@@ -44,6 +45,7 @@
                                 "caption": "Settings – User"
                             },
                             { "caption": "-" }
+                            */
                         ]
                     }
                 ]

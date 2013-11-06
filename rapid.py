@@ -306,3 +306,8 @@ class RapidKillCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		subprocess.call("taskkill /F /IM rapid.exe")
 		RapidOutputView.printMessage("Server disconnected")
+
+class RapidTestCommand(sublime_plugin.TextCommand):
+	def run(self, edit):
+		print("Test!")
+		print(str(settings.test))

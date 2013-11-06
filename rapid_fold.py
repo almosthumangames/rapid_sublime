@@ -17,7 +17,7 @@ def fold_region_from_indent(view, r, include_next_line):
 
 
 class RapidFoldAllCommand(sublime_plugin.TextCommand):
-	def run(self, edit):
+	def run(self, edit):	
 		folds = []
 		tp = 0
 		size = self.view.size()

@@ -3,13 +3,28 @@
         { "keys": ["f5"], "command": "rapid_check_server_and_startup_project" }, 
         { "keys": ["alt+f"], "command": "rapid_fold_unfold" },
         { "keys": ["alt+o"], "command": "rapid_unfold_all" },
-        { "keys": ["alt+c"], "command": "rapid_fold_all" },
+        { "keys": ["alt+c"], "command": "rapid_fold_all", "context": 
+            [
+                { "key": "setting.is_widget", "operator": "equal", "operand": false }
+            ]         
+        },
         { "keys": ["f1"], "command": "rapid_help" },
         { "keys": ["ctrl+t"], "command": "rapid_resume" },
         { "keys": ["ctrl+shift+x"], "command": "rapid_output_view_clear" }, 
-              
+        { "keys": ["escape"], "command": "rapid_close_output_view", "context":
+            [
+                { "key": "close_server_output", "operator": "equal", "operand": true }
+            ]
+        },
+
+
+
         { "keys": ["f3"], "command": "rapid_kill" },   
-        { "keys": ["f2"], "command": "rapid_test2" },  
+        { "keys": ["f2"], "command": "rapid_test", "context": 
+        [
+            { "key": "test", "operator": "equal", "operand": false }
+        ]
+        },  
 		{ "keys": ["ctrl+shift+]"], "command": "unfold" },
 		{ "keys": ["ctrl+shift+c"], "command": "show_panel", "args": {"panel": "console", "toggle": true} },
         { "keys": ["ctrl+shift+v"], "command": "show_panel", "args": {"panel": "server_output", "toggle": true} }

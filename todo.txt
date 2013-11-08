@@ -2,17 +2,18 @@ Rapid Sublime v.1.0 TODO:
 ------------------------
 Must have:
 
+- Autocomplete method variables
+- Help (F1) system with Python
 
-Nice to have:
-- alt+f to work with end lines
-- Lua snippets (?)
-- open server output view in a console, not in a view (is it possible?)
-- Mouse folding to work like alt+f (requires hacking lua.tmlanguage, is it worth it?)
+Backburner
+----------
+- Plugin_host.exe crashes when lots of stuff are printed to Server Output View
+- Mouse folding to work like alt+f (requires hacking lua.tmlanguage)
+- Run RapidOutputView in separate thread?
 
 v.2.0 stuff
 -----------
-- Autocomplete method variables
-- better help with F1 
+
 - debugger?
 - Colors in "Server Output Window"?
 
@@ -31,7 +32,7 @@ Fixed between pre-alpha and 0.0.4:
 - hlsl syntax highlighting (hlsl package works after closing and starting ST3)
 - Stacktrace: try to find files from all folders (in all windows)
 - Check project start file from all folders (in all windows) [if multiple project files are in project, the first is used ]
-- Load st packages from custom location? (google) -> seems to not to be possible
+- Load st packages from custom location? (google) -> seems to not to be possible -> fix: use package manager to load from github
 - Key bindings etc. to preferences -> package settings -> Rapid
 
 Done in 0.0.5
@@ -64,3 +65,10 @@ Done in 0.0.7
 	- fold block partially fixed
 	- alt+f works when cursor is on an unintented row inside a function block
 - speed up block folding/unfolding (alt+f)
+
+Done but not submitted
+----------------------
+- alt+f to work with function end lines
+- F1 working in all cases (works if you have loaded the correct project)
+- Folding removes empty lines at block end to be optional feature
+- Mouse clicking in server output view 

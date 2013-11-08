@@ -24,6 +24,7 @@ class RapidOutputView():
 					break
 
 			if RapidOutputView.output == None:
+				print("Creating new rapid output view")
 				groups = sublime.windows()[0].num_groups()
 				if groups < 2:
 					sublime.windows()[0].set_layout( {"cols": [0.0, 1.0], "rows": [0.0, 0.8, 1.0], "cells": [[0,0,1,1], [0,1,1,2]]} )
@@ -39,27 +40,28 @@ class RapidOutputView():
 
 	@staticmethod
 	def printMessage(msg):
-		output = RapidOutputView.getOutputView()	
-		#sublime.active_window().focus_view(output)
-		with Edit(output) as edit:
+		view = RapidOutputView.getOutputView()	
+		
+		with Edit(RapidOutputView.output) as edit:
 			if not '\n' in msg:
 				msg = msg + '\n'
 			edit.append(msg)
-			region = output.full_line(output.size())
-			output.show(region)
+			region = RapidOutputView.output.full_line(RapidOutputView.output.size())
+			RapidOutputView.output.show(region)
 
 class RapidOutputViewClearCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
-		output = RapidOutputView.getOutputView()
-		with Edit(output) as edit:
-			edit.erase(sublime.Region(0, output.size()))
+		view = RapidOutputView.getOutputView()
+		with Edit(view) as edit:
+			edit.erase(sublime.Region(0, RapidOutputView.output.size()))
 
 class RapidOutputViewListener(sublime_plugin.EventListener):
 	def on_close(self, view):
 		if view.name() == RapidOutputView.name:
 			RapidOutputView.output = None
+			view = None
 			sublime.windows()[0].set_layout( {"cols": [0.0, 1.0], "rows": [0.0, 1.0], "cells": [[0,0,1,1]] } )
-			#print(view.name() + " was closed")
+			print(view.name() + " was closed")
 
 class RapidDoubleClick(sublime_plugin.WindowCommand):
 	def run(self):
@@ -70,13 +72,10 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 			r = sel[0]
 			s = view.line(r)
 			line = view.substr(s)
-	
+			view.run_command("expand_selection", {"to": "line"})
+
 			file_name_and_row = re.search(r'[\w\.-]+.lua:\d{1,16}', line)
 			if file_name_and_row:
-				#draw line under the clicked filename and row
-				underline_region = view.find(file_name_and_row.group(), s.begin())
-				view.add_regions("doubleclick", [underline_region], "string","", sublime.DRAW_SOLID_UNDERLINE|sublime.DRAW_NO_FILL|sublime.DRAW_NO_OUTLINE)
-
 				#parse file name and row to separate variables
 				test = file_name_and_row.group().split(':')
 				file_name = test[0]
@@ -118,6 +117,11 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 					sublime.windows()[0].focus_group(0)
 					view = file_window.open_file(path+":"+file_row, sublime.ENCODED_POSITION)
 					#print("File name: " + view.file_name())
+		else:
+			system_command = args["command"] if "command" in args else None
+			if system_command:
+				system_args = dict({"event": args["event"]}.items() + args["args"].items())
+				self.view.run_command(system_command, system_args)
 
 class RapidCloseOutputViewCommand(sublime_plugin.TextCommand):
 	def run(self, edit):

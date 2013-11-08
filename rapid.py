@@ -34,6 +34,7 @@ class RapidConnectionThread(threading.Thread):
 		self.running = True
 		dataQueue = []
 
+		
 		RapidOutputView.printMessage("Thread started")
 		try:
 			while True:
@@ -46,7 +47,8 @@ class RapidConnectionThread(threading.Thread):
 
 				if data == '\n' or data == '\000':
 					datastr = "".join(dataQueue)
-					if dataQueue: #sdataQueue is not empty
+					if dataQueue: #dataQueue is not empty
+						#print(datastr)
 						RapidOutputView.printMessage(datastr)
 					del dataQueue[:]
 		except:
@@ -54,6 +56,7 @@ class RapidConnectionThread(threading.Thread):
 
 		self.sock.close()
 		self.running = False
+		del self.sock
 		RapidOutputView.printMessage("Connection terminated")
 
 	def isRunning(self):
@@ -82,7 +85,7 @@ class RapidHelpCommand(sublime_plugin.TextCommand):
 		cursor_pos = self.view.sel()[0].begin()
 		region = self.view.word(cursor_pos)
 		word = self.view.substr(region)
-
+		print("Sending word: " + word)
 		RapidConnectionThread.checkConnection()
 		line = "\nrequire(\"doc\"); doc.find([["+ word +"]])\000"
 		RapidConnectionThread.instance.sendString(line)

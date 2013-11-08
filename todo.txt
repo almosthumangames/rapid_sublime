@@ -1,9 +1,8 @@
 Rapid Sublime v.1.0 TODO:
 ------------------------
 Must have:
-
+- F5 window commandiksi text commandin sijaan
 - Autocomplete method variables
-- Help (F1) system with Python
 
 Backburner
 ----------
@@ -69,6 +68,7 @@ Done in 0.0.7
 Done but not submitted
 ----------------------
 - alt+f to work with function end lines
-- F1 working in all cases (works if you have loaded the correct project)
-- Folding removes empty lines at block end to be optional feature
+- F1 working in all cases (fix: works ok if you have loaded the correct project)
+- Folding removes empty lines at block end to be optional feature (hide empty lines will be default)
 - Mouse clicking in server output view 
+- Help (F1) system with Python

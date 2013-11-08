@@ -65,7 +65,7 @@ Done in 0.0.7
 	- alt+f works when cursor is on an unintented row inside a function block
 - speed up block folding/unfolding (alt+f)
 
-Done but not submitted
+Done in 0.0.8
 ----------------------
 - alt+f to work with function end lines
 - F1 working in all cases (fix: works ok if you have loaded the correct project)

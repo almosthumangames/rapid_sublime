@@ -1,7 +1,6 @@
 import sublime, sublime_plugin
 import os
 import re
-import fnmatch
 
 from .rapid_output import RapidOutputView
 

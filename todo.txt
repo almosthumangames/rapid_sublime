@@ -2,8 +2,6 @@ Rapid Sublime v.1.0 TODO:
 ------------------------
 Must have:
 
-- Autocomplete method variables
-	- If multiple possibilities found, show dropdown menu?
 
 Backburner
 ----------
@@ -79,3 +77,7 @@ Done in 0.0.9
 - Help class methods find with wildcard
 - F5 window commandiksi text commandin sijaan
 - Some autocomplete functionality
+
+Done in 0.0.10
+----------------------
+- Autocomplete and tab traversal

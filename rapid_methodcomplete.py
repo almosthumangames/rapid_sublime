@@ -97,9 +97,20 @@ class FunctionStorage():
 		autocomplete_list = []
 		for method_obj in FunctionStorage.functions:
 			if word in method_obj.name():
-				method_str_to_append = method_obj.name() + '(' + method_obj.signature()+ ')'
+				#	{ "trigger": "crossfade", "contents": "crossfade(${1:name}, ${2:length}, ${3:loop})"},
+				variables = method_obj.signature().split(",")
+				signature = ""
+				index = 1
+				for variable in variables:
+					signature = signature + "${"+str(index)+":"+variable+"}"
+					if index < len(variables):
+						signature = signature + ", "
+					index = index+1
+
+				method_str_to_show = method_obj.name() + '(' + method_obj.signature() +')'
+				method_str_to_append = method_obj.name() + '(' + signature + ')'
 				method_file_location = method_obj.filename();
-				autocomplete_list.append((method_str_to_append + '\t' + method_file_location,method_str_to_append)) 
+				autocomplete_list.append((method_str_to_show + '\t' + method_file_location, method_str_to_append)) 
 		return autocomplete_list	
 
 class Collector(sublime_plugin.EventListener):
@@ -116,7 +127,7 @@ class Collector(sublime_plugin.EventListener):
 	def on_query_completions(self, view, prefix, locations):
 		#RapidOutputView.printMessage("on_query_completions")
 		completions = []
-		if '.lua' in view.file_name():
+		if view.file_name() != None and '.lua' in view.file_name():
 			return FunctionStorage.getAutoCompleteList(prefix)
 		completions.sort()
 		return (completions, sublime.INHIBIT_EXPLICIT_COMPLETIONS)

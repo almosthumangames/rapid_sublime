@@ -1,8 +1,9 @@
 Rapid Sublime v.1.0 TODO:
 ------------------------
 Must have:
-- F5 window commandiksi text commandin sijaan
+
 - Autocomplete method variables
+	- If multiple possibilities found, show dropdown menu?
 
 Backburner
 ----------
@@ -72,3 +73,9 @@ Done in 0.0.8
 - Folding removes empty lines at block end to be optional feature (hide empty lines will be default)
 - Mouse clicking in server output view 
 - Help (F1) system with Python
+
+Done in 0.0.9
+----------------------
+- Help class methods find with wildcard
+- F5 window commandiksi text commandin sijaan
+- Some autocomplete functionality

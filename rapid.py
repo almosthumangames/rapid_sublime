@@ -162,9 +162,10 @@ class RapidEvalCommand(sublime_plugin.TextCommand):
 			#print(line_contents)
 			return line_contents
 
-class RapidCheckServerAndStartupProjectCommand(sublime_plugin.TextCommand):
-	def run(self, edit):
+class RapidCheckServerAndStartupProjectCommand(sublime_plugin.WindowCommand):
+	def run(self):
 		#print("Rapid Check Server")
+		self.view = self.window.active_view()
 
 		self.view.run_command('rapid_output_view_clear')
 
@@ -239,6 +240,7 @@ class RapidConnect():
 		RapidOutputView.printMessage("Starting rapid.exe")
 		subprocess.Popen(rapid_path + "\\" + rapid_exe, cwd=rapid_path)
 		#subprocess.Popen(r'c:\Work\projects\rapid\rapid.exe', cwd=r'c:\Work\projects\rapid')
+
 
 # DEBUGGING STUFF, REMOVE AFTER DEVELOPMENT!!!
 

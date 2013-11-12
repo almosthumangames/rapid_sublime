@@ -59,9 +59,7 @@ class RapidOutputViewListener(sublime_plugin.EventListener):
 	def on_close(self, view):
 		if view.name() == RapidOutputView.name:
 			RapidOutputView.output = None
-			view = None
 			sublime.windows()[0].set_layout( {"cols": [0.0, 1.0], "rows": [0.0, 1.0], "cells": [[0,0,1,1]] } )
-			print(view.name() + " was closed")
 
 class RapidDoubleClick(sublime_plugin.WindowCommand):
 	def run(self):

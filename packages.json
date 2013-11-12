@@ -4,9 +4,9 @@
     "releases": [
         {
         	"name": "Rapid",
-        	"version": "0.0.8",
+        	"version": "0.0.9",
             "details": "https://github.com/almosthumangames/rapid_sublime",
-            "date": "2013-11-08 17:34:00"
+            "date": "2013-11-12 15:34:00"
         }
     ]
 }

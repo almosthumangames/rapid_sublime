@@ -40,7 +40,7 @@ class RapidOutputView():
 	@staticmethod
 	def printMessage(msg):
 		view = RapidOutputView.getOutputView()		
-		view.set_syntax_file("Rapid.tmLanguage")
+		#view.set_syntax_file("Rapid.tmLanguage")
 			
 		with Edit(RapidOutputView.output) as edit:
 			if not '\n' in msg:

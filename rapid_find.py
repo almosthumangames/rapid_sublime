@@ -10,14 +10,15 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 		
 		region = self.view.word(cursor_pos)
 		pattern = self.view.substr(region)
+		#RapidOutputView.printMessage("Pattern is: " + pattern)
 
 		region2 = self.view.line(cursor_pos)
 		line = self.view.substr(region2)
 		words = line.split()
+		#RapidOutputView.printMessage("Words are: " + str(words))
 
-		#for some reason matching '*' is not working by using only 'if pattern in word'
 		for word in words:
-			if "*" in pattern and "*" in word or pattern in word:		
+			if "*" in word and pattern in word:		
 				pattern = word
 				break
 
@@ -48,7 +49,7 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 				if re.match(r'///', line) != None:
 					lower_line = line.lower()
 					#local func = string.match(line, "^///.*=%s*([%.:_%w]+)%(") or string.match(line, "^///%s*([%.:_%w]+)%(")
-					match = re.search('.*'+pattern+'.*\(', lower_line)
+					match = re.search('.*'+pattern+'.*\(.*\)', lower_line)
 					if match != None:
 						line = line.replace("///", "").strip()
 						RapidOutputView.printMessage(line)
@@ -59,7 +60,7 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 				if re.match(r'function', line) != None:
 					lower_line = line.lower()
 					#local func = string.match(line, "function ([%.:_%w]+)%(")
-					match = re.search('.*'+pattern+'.*\(', lower_line)
+					match = re.search('.*'+pattern+'.*\(.*\)', lower_line)
 					if match != None:
 						line = line.strip()
 						RapidOutputView.printMessage(line)
@@ -89,7 +90,7 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 					#lower_line = line.lower()
 					lower_line = line.lower()
 					for pattern in patterns:
-						match = re.search('\s' + pattern + '\(', lower_line)
+						match = re.search('\s' + pattern + '\(.*\)', lower_line)
 						if match != None:
 							line = line.replace("///", "").strip()
 							RapidOutputView.printMessage(line)
@@ -101,6 +102,6 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 					#lower_line = line.lower()
 					lower_line = line.lower()
 					for pattern in patterns:
-						match = re.search('\s' + pattern + '\(', lower_line)
+						match = re.search('\s' + pattern + '\(.*\)', lower_line)
 						if match != None:
 							RapidOutputView.printMessage(line)

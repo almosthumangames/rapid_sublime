@@ -24,7 +24,6 @@ class RapidOutputView():
 					break
 
 			if RapidOutputView.output == None:
-				print("Creating new rapid output view")
 				groups = sublime.windows()[0].num_groups()
 				if groups < 2:
 					sublime.windows()[0].set_layout( {"cols": [0.0, 1.0], "rows": [0.0, 0.8, 1.0], "cells": [[0,0,1,1], [0,1,1,2]]} )
@@ -40,8 +39,9 @@ class RapidOutputView():
 
 	@staticmethod
 	def printMessage(msg):
-		view = RapidOutputView.getOutputView()	
-		
+		view = RapidOutputView.getOutputView()		
+		view.set_syntax_file("Rapid.tmLanguage")
+			
 		with Edit(RapidOutputView.output) as edit:
 			if not '\n' in msg:
 				msg = msg + '\n'

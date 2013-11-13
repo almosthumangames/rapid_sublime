@@ -6,13 +6,68 @@ Must have:
 Backburner
 ----------
 - Plugin_host.exe crashes when lots of stuff are printed to Server Output View
-- Mouse folding to work like alt+f (not possible at the moment)
+- Mouse folding to work like alt+f (not possible at the moment, ST3 limitation)
 - Run RapidOutputView in separate thread?
-
-v.2.0 stuff
------------
-- debugger?
+- Debugger?
 - Colors in "Server Output Window"?
+
+Done but not submitted
+----------------------
+
+Done in 0.0.11
+----------------------
+- Custom autocomplete with ctrl+space
+- Autocomplete is triggered only with ctrl+space
+- Fixed bug in 'help' (F1) command
+
+Done in 0.0.10
+----------------------
+- Autocomplete and tab traversal
+
+Done in 0.0.9
+----------------------
+- Help class methods find with wildcard
+- F5 window commandiksi text commandin sijaan
+- Some autocomplete functionality
+
+Done in 0.0.8
+----------------------
+- alt+f to work with function end lines
+- F1 working in all cases (fix: works ok if you have loaded the correct project)
+- Folding removes empty lines at block end to be optional feature (hide empty lines will be default)
+- Mouse clicking in server output view 
+- Help (F1) system with Python
+
+Done in 0.0.7
+----------------------
+- Project settings are parsed from JSON file
+	- Project settings file extension is *.rapid_sublime
+	- Rapid.exe path is parsed from project settings file
+- Component.lua:50 cursor jumps weirdly when folding a function (could not reproduce this)
+- alt+e should not move focus to server output view
+- esc to close only current context
+- alt+f inside a function should not ignore empty lines 
+- folding breaks with multiline strings (DungeonEditor.lua) (fully fixed)
+	- fold all fixed
+	- fold block partially fixed
+	- alt+f works when cursor is on an unintented row inside a function block
+- speed up block folding/unfolding (alt+f)
+
+Done in 0.0.6
+----------------------
+- shutting down server output view shuts down the group
+- alt+c works in search 
+- esc shuts down server output view
+
+Done in 0.0.5
+----------------------
+- When evaluating block, the number of the first row must be sent to server
+- When evaluating block, the first line of the block is always printed to server output
+- resume (ctrl + t)
+- f1 connects to server if not already connected
+- remove empty line between two folded functions 
+- folding rules now work
+- double click works when rapid_sublime is running
 
 Fixed between pre-alpha and 0.0.4:
 ---------------------------------
@@ -31,57 +86,3 @@ Fixed between pre-alpha and 0.0.4:
 - Check project start file from all folders (in all windows) [if multiple project files are in project, the first is used ]
 - Load st packages from custom location? (google) -> seems to not to be possible -> fix: use package manager to load from github
 - Key bindings etc. to preferences -> package settings -> Rapid
-
-Done in 0.0.5
-----------------------
-- When evaluating block, the number of the first row must be sent to server
-- When evaluating block, the first line of the block is always printed to server output
-- resume (ctrl + t)
-- f1 connects to server if not already connected
-- remove empty line between two folded functions 
-- folding rules now work
-- double click works when rapid_sublime is running
-
-Done in 0.0.6
-----------------------
-- shutting down server output view shuts down the group
-- alt+c works in search 
-- esc shuts down server output view
-
-Done in 0.0.7
-----------------------
-- Project settings are parsed from JSON file
-	- Project settings file extension is *.rapid_sublime
-	- Rapid.exe path is parsed from project settings file
-- Component.lua:50 cursor jumps weirdly when folding a function (could not reproduce this)
-- alt+e should not move focus to server output view
-- esc to close only current context
-- alt+f inside a function should not ignore empty lines 
-- folding breaks with multiline strings (DungeonEditor.lua) (fully fixed)
-	- fold all fixed
-	- fold block partially fixed
-	- alt+f works when cursor is on an unintented row inside a function block
-- speed up block folding/unfolding (alt+f)
-
-Done in 0.0.8
-----------------------
-- alt+f to work with function end lines
-- F1 working in all cases (fix: works ok if you have loaded the correct project)
-- Folding removes empty lines at block end to be optional feature (hide empty lines will be default)
-- Mouse clicking in server output view 
-- Help (F1) system with Python
-
-Done in 0.0.9
-----------------------
-- Help class methods find with wildcard
-- F5 window commandiksi text commandin sijaan
-- Some autocomplete functionality
-
-Done in 0.0.10
-----------------------
-- Autocomplete and tab traversal
-
-Done in 0.0.11
-----------------------
-- Custom autocomplete with ctrl+space
-- Autocomplete is triggered only with ctrl+space

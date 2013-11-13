@@ -6,12 +6,11 @@ Must have:
 Backburner
 ----------
 - Plugin_host.exe crashes when lots of stuff are printed to Server Output View
-- Mouse folding to work like alt+f (requires hacking lua.tmlanguage)
+- Mouse folding to work like alt+f (not possible at the moment)
 - Run RapidOutputView in separate thread?
 
 v.2.0 stuff
 -----------
-
 - debugger?
 - Colors in "Server Output Window"?
 
@@ -81,3 +80,8 @@ Done in 0.0.9
 Done in 0.0.10
 ----------------------
 - Autocomplete and tab traversal
+
+Done in 0.0.11
+----------------------
+- Custom autocomplete with ctrl+space
+- Autocomplete is triggered only with ctrl+space

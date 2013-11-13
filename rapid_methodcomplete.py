@@ -13,6 +13,7 @@
 
 import sublime, sublime_plugin
 import os, re, threading
+import time, datetime
 
 from os.path import basename
 from .rapid_output import RapidOutputView
@@ -36,7 +37,7 @@ class Method:
 	def filename(self):
 		return self._filename
 
-class CollectorThread(threading.Thread):
+class RapidCollectorThread(threading.Thread):
 	instance = None
 	MAX_WORD_SIZE = 100
 	MAX_FUNC_SIZE = 50
@@ -45,7 +46,7 @@ class CollectorThread(threading.Thread):
 		self.folders = folders
 		self.timeout = timeout
 		threading.Thread.__init__(self)
-		CollectorThread.instance = self
+		RapidCollectorThread.instance = self
 
 	def save_method_signature(self, file_name):
 		file_lines = open(file_name, 'r')
@@ -54,9 +55,9 @@ class CollectorThread(threading.Thread):
 				matches = re.search('function\s\w+[:\.](\w+)\((.*)\)', line)
 				matches2 = re.search('function\s*(\w+)\s*\((.*)\)', line)
 				if matches != None and (len(matches.group(1)) < self.MAX_FUNC_SIZE and len(matches.group(2)) < self.MAX_FUNC_SIZE):
-					FunctionStorage.addFunction(matches.group(1), matches.group(2), basename(file_name))
+					RapidFunctionStorage.addFunction(matches.group(1), matches.group(2), basename(file_name))
 				elif matches2 != None and (len(matches2.group(1)) < self.MAX_FUNC_SIZE and len(matches2.group(2)) < self.MAX_FUNC_SIZE):
-					FunctionStorage.addFunction(matches2.group(1), matches2.group(2), basename(file_name))
+					RapidFunctionStorage.addFunction(matches2.group(1), matches2.group(2), basename(file_name))
 
 	def get_lua_files(self, dir_name, *args):
 		fileList = []
@@ -80,21 +81,21 @@ class CollectorThread(threading.Thread):
 		if self.isAlive():
 			self._Thread__stop()
 
-class FunctionStorage():
+class RapidFunctionStorage():
 	functions = []
 
 	@staticmethod
 	def clear():
-		FunctionStorage.functions = []
+		RapidFunctionStorage.functions = []
 
 	@staticmethod
 	def addFunction(name, signature, filename):
-		FunctionStorage.functions.append(Method(name, signature, filename))
+		RapidFunctionStorage.functions.append(Method(name, signature, filename))
 	
 	@staticmethod
 	def getAutoCompleteList(word):
 		autocomplete_list = []
-		for method_obj in FunctionStorage.functions:
+		for method_obj in RapidFunctionStorage.functions:
 			if word in method_obj.name():
 				
 				#parse method variables
@@ -113,29 +114,43 @@ class FunctionStorage():
 				autocomplete_list.append((method_str_to_show + '\t' + method_file_location, method_str_to_append)) 
 		return autocomplete_list	
 
-class Collector(sublime_plugin.EventListener):
-	
+class RapidCollector(sublime_plugin.EventListener):
+	applyAutoComplete = False
+
 	def on_post_save(self, view):
-		FunctionStorage.clear()
+		RapidFunctionStorage.clear()
 		folders = view.window().folders()
-		if CollectorThread.instance != None:
-			CollectorThread.instance.stop()
-		CollectorThread.instance = CollectorThread(folders, 30)
-		CollectorThread.instance.start()
+		if RapidCollectorThread.instance != None:
+			RapidCollectorThread.instance.stop()
+		RapidCollectorThread.instance = RapidCollectorThread(folders, 30)
+		RapidCollectorThread.instance.start()
+
+	def on_query_completions(self, view, prefix, locations):
+		if self.applyAutoComplete:
+			self.applyAutoComplete = False
+			if view.file_name() != None and '.lua' in view.file_name():
+				return RapidFunctionStorage.getAutoCompleteList(prefix)
+		completions = []
+		return (completions, sublime.INHIBIT_EXPLICIT_COMPLETIONS)
 	
 	# def on_query_completions(self, view, prefix, locations):
 	# 	completions = []
 	# 	if view.file_name() != None and '.lua' in view.file_name():
-	# 		return FunctionStorage.getAutoCompleteList(prefix)
+	# 		return RapidFunctionStorage.getAutoCompleteList(prefix)
 	# 	completions.sort()
 	# 	return (completions, sublime.INHIBIT_EXPLICIT_COMPLETIONS)
 
-
-class StartCollectorCommand(sublime_plugin.TextCommand):
+class RapidAutoCompleteCommand(sublime_plugin.TextCommand):
+	
 	def run(self, edit):
-		FunctionStorage.clear()
+		RapidCollector.applyAutoComplete = True
+		self.view.run_command('auto_complete')
+
+class RapidStartCollectorCommand(sublime_plugin.TextCommand):
+	def run(self, edit):
+		RapidFunctionStorage.clear()
 		folders = self.view.window().folders()
-		if CollectorThread.instance != None:
-			CollectorThread.instance.stop()
-		CollectorThread.instance = CollectorThread(folders, 30)
-		CollectorThread.instance.start()
+		if RapidCollectorThread.instance != None:
+			RapidCollectorThread.instance.stop()
+		RapidCollectorThread.instance = RapidCollectorThread(folders, 30)
+		RapidCollectorThread.instance.start()

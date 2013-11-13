@@ -26,10 +26,4 @@
             { "key": "overlay_visible", "operator": "equal", "operand": false }
         ]
     }
-    // { "keys": ["enter"], "command": "rapid_auto_complete", "context":
-    //     [
-    //         { "key": "auto_complete_visible" },
-    //         { "key": "setting.auto_complete_commit_on_tab", "operand": false }
-    //     ]
-    // }
 ] 

@@ -115,11 +115,11 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 					sublime.windows()[0].focus_group(0)
 					view = file_window.open_file(path+":"+file_row, sublime.ENCODED_POSITION)
 					#print("File name: " + view.file_name())
-		else:
-			system_command = args["command"] if "command" in args else None
-			if system_command:
-				system_args = dict({"event": args["event"]}.items() + args["args"].items())
-				self.view.run_command(system_command, system_args)
+		# else:
+			# system_command = args["command"] if "command" in args else None
+			# if system_command:
+			# 	system_args = dict({"event": args["event"]}.items() + args["args"].items())
+			# 	self.view.run_command(system_command, system_args)
 
 class RapidCloseOutputViewCommand(sublime_plugin.TextCommand):
 	def run(self, edit):

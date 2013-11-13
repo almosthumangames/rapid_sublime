@@ -48,7 +48,7 @@ class CollectorThread(threading.Thread):
 		CollectorThread.instance = self
 
 	def save_method_signature(self, file_name):
-		file_lines = open(file_name, 'rU')
+		file_lines = open(file_name, 'r')
 		for line in file_lines:
 			if "function" in line:
 				matches = re.search('function\s\w+[:\.](\w+)\((.*)\)', line)
@@ -71,7 +71,6 @@ class CollectorThread(threading.Thread):
 		return fileList
 
 	def run(self):
-		#RapidOutputView.printMessage("Collectorthread run")
 		for folder in self.folders:
 			luafiles = self.get_lua_files(folder)
 			for file_name in luafiles:
@@ -97,7 +96,8 @@ class FunctionStorage():
 		autocomplete_list = []
 		for method_obj in FunctionStorage.functions:
 			if word in method_obj.name():
-				#	{ "trigger": "crossfade", "contents": "crossfade(${1:name}, ${2:length}, ${3:loop})"},
+				
+				#parse method variables
 				variables = method_obj.signature().split(",")
 				signature = ""
 				index = 1
@@ -116,7 +116,6 @@ class FunctionStorage():
 class Collector(sublime_plugin.EventListener):
 	
 	def on_post_save(self, view):
-		#RapidOutputView.printMessage("on_post_save")
 		FunctionStorage.clear()
 		folders = view.window().folders()
 		if CollectorThread.instance != None:
@@ -124,18 +123,16 @@ class Collector(sublime_plugin.EventListener):
 		CollectorThread.instance = CollectorThread(folders, 30)
 		CollectorThread.instance.start()
 	
-	def on_query_completions(self, view, prefix, locations):
-		#RapidOutputView.printMessage("on_query_completions")
-		completions = []
-		if view.file_name() != None and '.lua' in view.file_name():
-			return FunctionStorage.getAutoCompleteList(prefix)
-		completions.sort()
-		return (completions, sublime.INHIBIT_EXPLICIT_COMPLETIONS)
+	# def on_query_completions(self, view, prefix, locations):
+	# 	completions = []
+	# 	if view.file_name() != None and '.lua' in view.file_name():
+	# 		return FunctionStorage.getAutoCompleteList(prefix)
+	# 	completions.sort()
+	# 	return (completions, sublime.INHIBIT_EXPLICIT_COMPLETIONS)
 
 
 class StartCollectorCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
-		#RapidOutputView.printMessage("start_collector_command")
 		FunctionStorage.clear()
 		folders = self.view.window().folders()
 		if CollectorThread.instance != None:

@@ -1,6 +1,4 @@
 import sublime
-import sys
-import os
 
 from .rapid_output import RapidOutputView
 

@@ -18,14 +18,16 @@
     { "keys": ["alt+x"], "command": "rapid_output_view_clear" }, 
     { "keys": ["escape"], "command": "rapid_close_output_view", "context":
         [
-            { "key": "close_server_output", "operator": "equal", "operand": true },
-            { "key": "auto_complete_visible", "operator": "equal", "operand": false },
             { "key": "num_selections", "operator": "equal", "operand": 1 },
             { "key": "has_next_field", "operator": "equal", "operand": false },
             { "key": "has_prev_field", "operator": "equal", "operand": false },
-            { "key": "overlay_visible", "operator": "equal", "operand": false }
+            { "key": "panel_visible", "operator": "equal", "operand": false },
+            { "key": "overlay_visible", "operator": "equal", "operand": false },
+            { "key": "auto_complete_visible", "operator": "equal", "operand": false },
+            { "key": "close_server_output", "operator": "equal", "operand": true }
         ]
     },
+    { "keys": ["alt+l"], "command": "rapid_start_collector" },
     { "keys": ["ctrl+space"], "command": "rapid_auto_complete" }
 
 

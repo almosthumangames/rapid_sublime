@@ -2,10 +2,30 @@ import sublime, sublime_plugin
 import os
 import re
 
+import time
+
 from .rapid_output import RapidOutputView
+from .rapid_parse import RapidSettings
 
 class RapidFindCommand(sublime_plugin.TextCommand):
+	folders_fetched = False
+	exclude_folders = False
+	excluded_folders = []
+
+	def getExcludedFolders(self):
+		if not self.folders_fetched:
+			settings = RapidSettings().getSettings()
+			if "ExcludeFoldersInFind" in settings:
+				self.exclude_folders = settings["ExcludeFoldersInFind"]
+			if "ExcludedFolders" in settings:
+				self.excluded_folders = settings["ExcludedFolders"]
+			self.folders_fetched = True
+			# print("Exclude folders: " + str(self.exclude_folders))
+			# print("Excluded folders: " + str(self.excluded_folders))
+
 	def run(self, edit):
+		self.getExcludedFolders()
+
 		cursor_pos = self.view.sel()[0].begin()
 		
 		region = self.view.word(cursor_pos)
@@ -18,9 +38,13 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 		#RapidOutputView.printMessage("Words are: " + str(words))
 
 		for word in words:
-			if "*" in word and pattern in word:		
-				pattern = word
-				break
+			if "*" in word:
+				#Handle edge cases for class find
+				if (pattern in word or 
+					"*\n" in pattern or "* " in pattern or 
+					"\n*" in pattern or " *" in pattern):
+					pattern = word
+					break
 
 		find_class_methods = False
 		if "*" in pattern and "." in pattern:
@@ -32,9 +56,29 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 		elif len(pattern) > 0:
 			self.find(pattern)
 
+	##########################################
+	# Find word(s) from function definitions #
+	##########################################
+
 	def find(self, pattern):	
-		for folder in sublime.active_window().folders():
+		# full_time1 = time.clock()
+		# lua_files = 0
+
+		pattern = '.*'+pattern+'.*\(.*\)'
+		#print("(Find) Regex pattern: " + pattern)
+
+		for folder in sublime.active_window().folders():		
 			for root, dirs, files in os.walk(folder):
+				
+				checkFolder = True
+				if self.exclude_folders:
+					for excluded_folder in self.excluded_folders:
+						if root.lower().startswith(excluded_folder.lower()):			
+							checkFolder = False 
+							break
+					if not checkFolder:
+					 	continue
+
 				for name in files:
 					if name.endswith("cpp"):
 						full_path = os.path.abspath(os.path.join(root, name))
@@ -42,66 +86,82 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 					elif name.endswith("lua"):
 						full_path = os.path.abspath(os.path.join(root, name))
 						self.findLua(full_path, pattern)
+						#lua_files = lua_files + 1
+
+		# full_time2 = time.clock()
+		# print("Whole op took: " + str(full_time2-full_time1))
+		# print("Processed " + str(lua_files) + " lua files")
 
 	def findCpp(self, filepath, pattern):
-		with open(filepath, "r") as f:
-			for line in f:
-				if re.match(r'///', line) != None:
-					lower_line = line.lower()
-					#local func = string.match(line, "^///.*=%s*([%.:_%w]+)%(") or string.match(line, "^///%s*([%.:_%w]+)%(")
-					match = re.search('.*'+pattern+'.*\(.*\)', lower_line)
-					if match != None:
-						line = line.replace("///", "").strip()
-						RapidOutputView.printMessage(line)
+		f = open(filepath, "r").read()
+		function_list = re.findall('///.*\n', f)
+		for func in function_list:
+			lower_line = func.lower()
+			match = re.search(pattern, lower_line)
+			#match = re.search('.*'+pattern+'.*\(.*\)', lower_line)
+			if match != None:
+				func = func.replace("///", "").strip()
+				RapidOutputView.printMessage(func)
 
 	def findLua(self, filepath, pattern):
-		with open(filepath, "r") as f:
-			for line in f:
-				if re.match(r'function', line) != None:
-					lower_line = line.lower()
-					#local func = string.match(line, "function ([%.:_%w]+)%(")
-					match = re.search('.*'+pattern+'.*\(.*\)', lower_line)
-					if match != None:
-						line = line.strip()
-						RapidOutputView.printMessage(line)
+		f = open(filepath, "r").read()
+		function_list = re.findall('function.*\n', f)
+		for func in function_list:
+			lower_line = func.lower()
+			match = re.search(pattern, lower_line)
+			#match = re.search('.*'+pattern+'.*\(.*\)', lower_line)
+			if match != None:
+				line = func.strip()
+				RapidOutputView.printMessage(func)
 
-	def wildcardToRegex(pattern):
-		return re.escape()
+	############################################
+	# Find class(es) from function definitions #
+	############################################
 
 	def findClass(self, pattern):
-		#convert wildcards to regular expressions
-		patterns = []
-		patterns.append(pattern.replace('.', '[\.:]').replace('*', '.*'))
+		#full_time1 = time.clock()
+
+		#convert wildcards to regular expression
+		pattern = pattern.replace('.', '[\.:]').replace('*', '.*')
+		search_pattern = '\s' + pattern + '\(.*\)'
+		#print("(Find class) Regex pattern: " + search_pattern)
 		
 		for folder in sublime.active_window().folders():
 			for root, dirs, files in os.walk(folder):
+
+				if self.exclude_folders:
+					for excluded_folder in self.excluded_folders:
+						if root.startswith(excluded_folder):
+							continue
+
 				for name in files:
 					if name.endswith("cpp"):
 						full_path = os.path.abspath(os.path.join(root, name))
-						self.findClassCpp(full_path, patterns)
+						self.findClassCpp(full_path, search_pattern)
 					elif name.endswith("lua"):
 						full_path = os.path.abspath(os.path.join(root, name))
-						self.findClassLua(full_path, patterns)
+						self.findClassLua(full_path, search_pattern)
 
-	def findClassCpp(self, filepath, patterns):
-		with open(filepath, "r") as f:
-			for line in f:
-				if re.match(r'///', line) != None: 
-					#lower_line = line.lower()
-					lower_line = line.lower()
-					for pattern in patterns:
-						match = re.search('\s' + pattern + '\(.*\)', lower_line)
-						if match != None:
-							line = line.replace("///", "").strip()
-							RapidOutputView.printMessage(line)
+		#full_time2 = time.clock()
+		#print("Whole op took: " + str(full_time2-full_time1))
 
-	def findClassLua(self, filepath, patterns):
-		with open(filepath, "r") as f:
-			for line in f:
-				if re.match(r'function', line) != None:
-					#lower_line = line.lower()
-					lower_line = line.lower()
-					for pattern in patterns:
-						match = re.search('\s' + pattern + '\(.*\)', lower_line)
-						if match != None:
-							RapidOutputView.printMessage(line)
+	def findClassCpp(self, filepath, pattern):
+		f = open(filepath, "r").read()
+		function_list = re.findall('///.*\n', f)
+		for func in function_list:
+			lower_line = func.lower()
+			# match = re.search('\s' + pattern + '\(.*\)', lower_line)
+			match = re.search(pattern, lower_line)
+			if match != None:
+				func = func.replace("///", "").strip()
+				RapidOutputView.printMessage(func)
+
+	def findClassLua(self, filepath, pattern):
+		f = open(filepath, "r").read()
+		function_list = re.findall('function.*\n', f)
+		for func in function_list:
+			lower_line = func.lower()
+			match = re.search(pattern, lower_line)
+			#match = re.search('\s' + pattern + '\(.*\)', lower_line)
+			if match != None:
+				RapidOutputView.printMessage(func)

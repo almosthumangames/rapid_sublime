@@ -40,7 +40,8 @@ class RapidOutputView():
 	@staticmethod
 	def printMessage(msg):
 		view = RapidOutputView.getOutputView()		
-		#view.set_syntax_file("Rapid.tmLanguage")
+		view.set_syntax_file("Packages/Lua/Lua.tmLanguage")
+		#print("Syntax: " + view.settings().get('syntax'))
 			
 		with Edit(RapidOutputView.output) as edit:
 			if not '\n' in msg:
@@ -123,9 +124,18 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 
 class RapidCloseOutputViewCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
+		#print("Rapid Close Output View command")
 		if RapidOutputView.output != None:
 			self.view.window().focus_view(RapidOutputView.output)
 			self.view.window().run_command("close_file")
+		else:
+			for window in sublime.windows():
+				for view in window.views():
+					if view.name() == RapidOutputView.name:
+						self.view.window().focus_view(view)
+						self.view.window().run_command("close_file")
+						break
+						
 
 class RapidOutputEventListener(sublime_plugin.EventListener):
 	def on_query_context(self, view, key, operator, operand, match_all):

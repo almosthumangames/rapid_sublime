@@ -38,7 +38,6 @@ class RapidSettings():
 	def startupProjectExists(self):
 		if "StartupProject" in self.project_settings:
 			return True
-		RapidOutputView.printMessage(self.project_settings)
 		return False
 
 	def getStartupProjectPath(self):

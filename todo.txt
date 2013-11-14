@@ -1,5 +1,7 @@
 Rapid Sublime v.1.0 TODO:
 ------------------------
+TODO:
+
 Must have:
 
 
@@ -7,12 +9,22 @@ Backburner
 ----------
 - Plugin_host.exe crashes when lots of stuff are printed to Server Output View
 - Mouse folding to work like alt+f (not possible at the moment, ST3 limitation)
-- Run RapidOutputView in separate thread?
+- Run RapidOutputView in separate thread? (any advantage with this?)
 - Debugger?
-- Colors in "Server Output Window"?
 
-Done but not submitted
+Done in 0.0.12
 ----------------------
+- Autocomplete bug fixing
+	-> Explicit definition loading with alt+l
+	-> Force ST3 to use custom autocomplete in all cases
+- Esc disables search first, then server output view
+- Lua coloring in RapidOutputView 
+- Rapid find edge case handling ('*' and cursor are at the start or at the end of the word)
+- Fold local functions with alt+f and alt+c
+- Autocomplete uses same parsing as rapid_find
+- Autocomplete suggestions are not case-sensitive
+- Eval does not work when function has space(s) instead of tab indentation
+- Handle settings file parsing error (wrong/missing values)
 
 Done in 0.0.11
 ----------------------

@@ -93,21 +93,91 @@ class RapidHelpCommand(sublime_plugin.TextCommand):
 class RapidEvalCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		RapidConnectionThread.checkConnection()
-		line_contents = self.getLines()
+		line_contents = self.getLines2()
 		RapidConnectionThread.instance.sendString(line_contents)
 
-	def getLines(self):
-		for region in self.view.sel():
+	# def getLines(self):
+	# 	for region in self.view.sel():
 
-			current_row  = self.view.rowcol(self.view.sel()[0].begin())[0]
+	# 		current_row  = self.view.rowcol(self.view.sel()[0].begin())[0]
+
+	# 		if region.empty():
+	# 			#check if we are evaluating a block instead of line
+	# 			line = self.view.full_line(region)
+	# 			line_contents = self.view.substr(line)
+				
+	# 			print("Line indent level: " + str(self.view.indentation_level(self.view.sel()[0].begin())))
+
+	# 			#eval block
+	# 			if line_contents.find("\t") == 0 or line_contents.find(" ") == 0:
+	# 				start_row = current_row
+	# 				end_row = current_row
+	# 				index = 1
+
+	# 				#find start of the block
+	# 				block_start = False
+	# 				while not block_start:
+	# 					start_row = current_row - index
+	# 					start_line = self.view.full_line(self.view.text_point(start_row, 0))
+	# 					start_line_contents = self.view.substr(start_line)
+	# 					if start_line_contents.find("\t") != 0 and start_line_contents.find(" ") and start_line_contents.strip() != '':
+	# 						block_start = True
+	# 					else:
+	# 						index = index + 1
+
+	# 				#find end of the block
+	# 				index = 1
+	# 				block_end = False
+	# 				while not block_end:
+	# 					end_row = current_row + index
+	# 					end_line = self.view.full_line(self.view.text_point(end_row, 0))
+	# 					end_line_contents = self.view.substr(end_line)
+	# 					if end_line_contents.find("\t") != 0 and start_line_contents.find(" ") and end_line_contents.strip() != '':
+	# 						block_end = True
+	# 					else:
+	# 						index = index + 1
+					
+	# 				start_offset = self.view.text_point(start_row, 0)
+	# 				end_offset = self.view.text_point(end_row+1, 0)
+	# 				block_region = sublime.Region(start_offset, end_offset)
+	# 				line = self.view.full_line(block_region)
+
+	# 				file_row = start_row
+	# 				#print("Sending: " + str(file_row))
+	# 				msg = "Updating " + start_line_contents
+	# 				RapidOutputView.printMessage(msg)
+	# 				file_row_str = str(file_row + 1)
+	# 			else:
+	# 				line = self.view.line(region) #expand the region for full line if no selection
+	# 				file_row_str = str(current_row + 1)
+	# 		else:
+	# 			line = region #get only the selected area
+	# 			file_row_str = str(current_row + 1)
+
+	# 		file_name = ""
+
+	# 		if self.view.file_name() != None:
+	# 			file_name = self.view.file_name().split("\\")[-1]
+			
+	# 		line_str = self.view.substr(line)
+	# 		line_contents = "@" + file_name + ":" + file_row_str + "\n" + line_str + "\000"
+	# 		#print(line_contents)
+	# 		return line_contents
+
+	def getLines2(self):
+		for region in self.view.sel():
+			cursor_pos = self.view.sel()[0].begin()
+			current_row = self.view.rowcol(cursor_pos)[0]
 
 			if region.empty():
 				#check if we are evaluating a block instead of line
 				line = self.view.full_line(region)
 				line_contents = self.view.substr(line)
 				
+				#print("Line indent level: " + str(self.view.indentation_level(self.view.sel()[0].begin())))
+
 				#eval block
-				if line_contents.find("\t") == 0:
+				if self.view.indentation_level(cursor_pos) > 0:
 					start_row = current_row
 					end_row = current_row
 					index = 1
@@ -116,9 +186,10 @@ class RapidEvalCommand(sublime_plugin.TextCommand):
 					block_start = False
 					while not block_start:
 						start_row = current_row - index
-						start_line = self.view.full_line(self.view.text_point(start_row, 0))
+						start_pos = self.view.text_point(start_row, 0)
+						start_line = self.view.full_line(start_pos)
 						start_line_contents = self.view.substr(start_line)
-						if start_line_contents.find("\t") != 0 and start_line_contents.strip() != '':
+						if self.view.indentation_level(start_pos) == 0 and start_line_contents.strip() != '':
 							block_start = True
 						else:
 							index = index + 1
@@ -128,9 +199,10 @@ class RapidEvalCommand(sublime_plugin.TextCommand):
 					block_end = False
 					while not block_end:
 						end_row = current_row + index
-						end_line = self.view.full_line(self.view.text_point(end_row, 0))
+						end_pos = self.view.text_point(end_row, 0)
+						end_line = self.view.full_line(end_pos)
 						end_line_contents = self.view.substr(end_line)
-						if end_line_contents.find("\t") != 0 and end_line_contents.strip() != '':
+						if self.view.indentation_level(end_pos) == 0 and end_line_contents.strip() != '':
 							block_end = True
 						else:
 							index = index + 1
@@ -162,11 +234,11 @@ class RapidEvalCommand(sublime_plugin.TextCommand):
 			#print(line_contents)
 			return line_contents
 
+
 class RapidCheckServerAndStartupProjectCommand(sublime_plugin.WindowCommand):
 	def run(self):
 		#print("Rapid Check Server")
 		self.view = self.window.active_view()
-
 		self.view.run_command('rapid_output_view_clear')
 
 		#Check if startup project exists and if it has been modified
@@ -174,11 +246,8 @@ class RapidCheckServerAndStartupProjectCommand(sublime_plugin.WindowCommand):
 		is_modified = False
 
 		RapidOutputView.printMessage("Loading project settings...")
-		settings = RapidSettings()
-
-		#RapidOutputView.printMessage("Project settings loaded")
-		startup_path = settings.getStartupFilePath()
-		#RapidOutputView.printMessage("startup_path: " + startup_path)
+		#settings = RapidSettings()
+		startup_path = RapidSettings().getStartupFilePath()
 
 		if startup_path:
 			startup_exists = True
@@ -187,9 +256,6 @@ class RapidCheckServerAndStartupProjectCommand(sublime_plugin.WindowCommand):
 				is_modified = True
 		elif self.view.is_dirty():
 			is_modified = True
-
-		#RapidOutputView.printMessage("Startup exists: " + str(startup_exists))
-		#RapidOutputView.printMessage("Is modified: " + str(is_modified))
 
 		#Send commands to server accordingly
 		RapidConnectionThread.checkConnection()
@@ -221,11 +287,9 @@ class RapidConnect():
 		rapid_running = True
 
 		rapid = subprocess.check_output("tasklist /FI \"IMAGENAME eq rapid.exe\" /FO CSV")
-		#print(rapid)
 		rapid_search = re.search(r'rapid.exe', rapid.decode("ISO-8859-1"))
 		if rapid_search == None:
 			rapid_debug = subprocess.check_output("tasklist /FI \"IMAGENAME eq rapid_d.exe\" /FO CSV")
-			#print(rapid_debug)
 			rapid_debug_search = re.search(r'rapid_d.exe', rapid_debug.decode("ISO-8859-1"))
 			if rapid_debug_search == None:
 				rapid_running = False
@@ -233,14 +297,22 @@ class RapidConnect():
 		if rapid_running:
 			return
 
+		rapid_path = ""
+		rapid_exe = ""
 		settings = RapidSettings().getSettings()
-		rapid_path = settings["RapidPath"]
-		rapid_exe = settings["RapidExe"]
+		if "RapidPath" in settings:
+			rapid_path = settings["RapidPath"]
+		if "RapidExe" in settings:
+			rapid_exe = settings["RapidExe"]
 
-		RapidOutputView.printMessage("Starting rapid.exe")
-		subprocess.Popen(rapid_path + "\\" + rapid_exe, cwd=rapid_path)
-		#subprocess.Popen(r'c:\Work\projects\rapid\rapid.exe', cwd=r'c:\Work\projects\rapid')
-
+		if rapid_path and rapid_exe:
+			RapidOutputView.printMessage("Starting " + rapid_exe)
+			subprocess.Popen(rapid_path + "\\" + rapid_exe, cwd=rapid_path)
+			#subprocess.Popen(r'c:\Work\projects\rapid\rapid.exe', cwd=r'c:\Work\projects\rapid')
+		else:
+			RapidOutputView.printMessage("Could not start server executable!")
+			RapidOutputView.printMessage("\"RapidPath\" and/or \"RapidExe\" variables not found from project file!")
+		
 
 # DEBUGGING STUFF, REMOVE AFTER DEVELOPMENT!!!
 

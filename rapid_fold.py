@@ -29,7 +29,7 @@ class RapidFoldAllCommand(sublime_plugin.TextCommand):
 				if not s.empty():					
 					row = self.view.rowcol(tp)[0]
 					previous_line = self.view.full_line(self.view.text_point(row-1, 0))
-					if self.view.substr(previous_line).startswith('function'):
+					if self.view.substr(previous_line).startswith('function') or self.view.substr(previous_line).startswith('local function'):
 
 						#Hack to handle strings spanning multiple lines and breaking indentation 
 						next_line = self.view.full_line(s.end()+1)
@@ -73,9 +73,7 @@ class RapidUnfoldAllCommand(sublime_plugin.TextCommand):
 
 class RapidFoldUnfoldCommand(sublime_plugin.TextCommand):
 	def run(self, edit, add_empty_lines):
-
-
-		print(add_empty_lines)
+		#print(add_empty_lines)
 
 		cursor_position = self.view.sel()[0].begin()
 		cursor_line = self.view.line(cursor_position)
@@ -85,7 +83,7 @@ class RapidFoldUnfoldCommand(sublime_plugin.TextCommand):
 		cursor_at_end = False
 		#cursor_at_indent = False
 
-		if self.view.substr(cursor_line).startswith('function'):
+		if self.view.substr(cursor_line).startswith('function') or self.view.substr(cursor_line).startswith("local function"):
 			cursor_at_beginning = True
 			function_line = cursor_line
 		else:
@@ -97,7 +95,7 @@ class RapidFoldUnfoldCommand(sublime_plugin.TextCommand):
 			index = 1
 			while not check_finished:
 				previous_line = self.view.full_line(self.view.text_point(row-index, 0))				
-				if self.view.substr(previous_line).startswith("function"):
+				if self.view.substr(previous_line).startswith("function") or self.view.substr(previous_line).startswith("local function"):
 					cursor_position = previous_line.begin()
 					cursor_at_beginning = True
 					function_line = previous_line
@@ -111,7 +109,7 @@ class RapidFoldUnfoldCommand(sublime_plugin.TextCommand):
 		size = self.view.size()
 
 		while tp < size:
-			if self.view.indentation_level(tp) == 1:
+			if self.view.indentation_level(tp) > 0:
 				s = self.view.indented_region(tp)
 				if not s.empty():		
 
@@ -134,9 +132,9 @@ class RapidFoldUnfoldCommand(sublime_plugin.TextCommand):
 					next_line = self.view.full_line(self.view.text_point(last_row+1, 0))
 
 					region_found = False
-					if ( s.contains(cursor_line) and self.view.substr(previous_line).startswith('function') or
-						 cursor_at_beginning and previous_line.contains(cursor_line) or 
-						 cursor_at_end and next_line.contains(cursor_line) ):
+					if ( (s.contains(cursor_line) and (self.view.substr(previous_line).startswith('function') or self.view.substr(previous_line).startswith('local function'))) or
+						 (cursor_at_beginning and previous_line.contains(cursor_line)) or 
+						 (cursor_at_end and next_line.contains(cursor_line)) ):
 						region_found = True
 
 					if region_found:

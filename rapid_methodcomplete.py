@@ -13,10 +13,11 @@
 
 import sublime, sublime_plugin
 import os, re, threading
-import time, datetime
+import time
 
 from os.path import basename
 from .rapid_output import RapidOutputView
+from .rapid_parse import RapidSettings
 
 class Method:
 	_name = ""
@@ -42,9 +43,22 @@ class RapidCollectorThread(threading.Thread):
 	MAX_WORD_SIZE = 100
 	MAX_FUNC_SIZE = 50
 
+	def getExcludedFolders(self):
+		settings = RapidSettings().getSettings()		
+		if "ExcludeFoldersInFind" in settings:
+			self.exclude_folders = settings["ExcludeFoldersInFind"]
+		if "ExcludedFolders" in settings:
+			self.excluded_folders = settings["ExcludedFolders"]
+
+		#print("Exclude folders: " + str(self.exclude_folders))
+		#print("Excluded folders: " + str(self.excluded_folders))
+			
 	def __init__(self, folders, timeout):
 		self.folders = folders
 		self.timeout = timeout
+		self.exclude_folders = False
+		self.excluded_folders = []
+		self.getExcludedFolders()
 		threading.Thread.__init__(self)
 		RapidCollectorThread.instance = self
 
@@ -59,21 +73,44 @@ class RapidCollectorThread(threading.Thread):
 				elif matches2 != None and (len(matches2.group(1)) < self.MAX_FUNC_SIZE and len(matches2.group(2)) < self.MAX_FUNC_SIZE):
 					RapidFunctionStorage.addFunction(matches2.group(1), matches2.group(2), basename(file_name))
 
-	def get_lua_files(self, dir_name, *args):
+	# def get_lua_files(self, dir_name, *args):
+	# 	fileList = []
+	# 	for file in os.listdir(dir_name):
+	# 		dirfile = os.path.join(dir_name, file)
+	# 		if os.path.isfile(dirfile):
+	# 			fileName, fileExtension = os.path.splitext(dirfile)
+	# 			if fileExtension == ".lua":
+	# 				fileList.append(dirfile)
+	# 			elif os.path.isdir(dirfile):
+	# 				fileList += self.get_javascript_files(dirfile, *args) 
+
+	# 	print("File list size: " + str(len(fileList)))    
+	# 	return fileList
+
+	def get_lua_files2(self, folder, *args):
 		fileList = []
-		for file in os.listdir(dir_name):
-			dirfile = os.path.join(dir_name, file)
-			if os.path.isfile(dirfile):
-				fileName, fileExtension = os.path.splitext(dirfile)
-				if fileExtension == ".lua":
-					fileList.append(dirfile)
-				elif os.path.isdir(dirfile):
-					fileList += self.get_javascript_files(dirfile, *args)     
+		for root, dirs, files in os.walk(folder):
+			
+			checkFolder = True
+			if self.exclude_folders:
+				for excluded_folder in self.excluded_folders:
+					if root.lower().startswith(excluded_folder.lower()):			
+						checkFolder = False 
+						break
+				if not checkFolder:
+				 	continue
+						
+			for name in files:
+				if name.endswith("lua"):
+					full_path = os.path.abspath(os.path.join(root, name))
+					fileList.append(full_path)
+
+		#print("File list size: " + str(len(fileList)))    
 		return fileList
 
 	def run(self):
 		for folder in self.folders:
-			luafiles = self.get_lua_files(folder)
+			luafiles = self.get_lua_files2(folder)
 			for file_name in luafiles:
 				self.save_method_signature(file_name)
 
@@ -90,13 +127,14 @@ class RapidFunctionStorage():
 
 	@staticmethod
 	def addFunction(name, signature, filename):
+		#print("adding function " + name + ", " + signature + ", " + filename)
 		RapidFunctionStorage.functions.append(Method(name, signature, filename))
 	
 	@staticmethod
 	def getAutoCompleteList(word):
 		autocomplete_list = []
 		for method_obj in RapidFunctionStorage.functions:
-			if word in method_obj.name():
+			if word.lower() in method_obj.name().lower():
 				
 				#parse method variables
 				variables = method_obj.signature().split(",")
@@ -126,11 +164,13 @@ class RapidCollector(sublime_plugin.EventListener):
 		RapidCollectorThread.instance.start()
 
 	def on_query_completions(self, view, prefix, locations):
-		if self.applyAutoComplete:
-			self.applyAutoComplete = False
+		#print("on_query_completions: " + str(RapidCollector.applyAutoComplete))
+		if RapidCollector.applyAutoComplete:
+			RapidCollector.applyAutoComplete = False
 			if view.file_name() != None and '.lua' in view.file_name():
 				return RapidFunctionStorage.getAutoCompleteList(prefix)
 		completions = []
+		#print("Returning standard stuff")
 		return (completions, sublime.INHIBIT_EXPLICIT_COMPLETIONS)
 	
 	# def on_query_completions(self, view, prefix, locations):
@@ -141,13 +181,14 @@ class RapidCollector(sublime_plugin.EventListener):
 	# 	return (completions, sublime.INHIBIT_EXPLICIT_COMPLETIONS)
 
 class RapidAutoCompleteCommand(sublime_plugin.TextCommand):
-	
 	def run(self, edit):
+		#print("AutoCompleteCommand start")
 		RapidCollector.applyAutoComplete = True
 		self.view.run_command('auto_complete')
 
 class RapidStartCollectorCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
+		print("Collecting function definitions for autocomplete...")
 		RapidFunctionStorage.clear()
 		folders = self.view.window().folders()
 		if RapidCollectorThread.instance != None:

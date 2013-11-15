@@ -49,9 +49,6 @@ class RapidCollectorThread(threading.Thread):
 			self.exclude_folders = settings["ExcludeFoldersInFind"]
 		if "ExcludedFolders" in settings:
 			self.excluded_folders = settings["ExcludedFolders"]
-
-		#print("Exclude folders: " + str(self.exclude_folders))
-		#print("Excluded folders: " + str(self.excluded_folders))
 			
 	def __init__(self, folders, timeout):
 		self.folders = folders
@@ -73,21 +70,7 @@ class RapidCollectorThread(threading.Thread):
 				elif matches2 != None and (len(matches2.group(1)) < self.MAX_FUNC_SIZE and len(matches2.group(2)) < self.MAX_FUNC_SIZE):
 					RapidFunctionStorage.addFunction(matches2.group(1), matches2.group(2), basename(file_name))
 
-	# def get_lua_files(self, dir_name, *args):
-	# 	fileList = []
-	# 	for file in os.listdir(dir_name):
-	# 		dirfile = os.path.join(dir_name, file)
-	# 		if os.path.isfile(dirfile):
-	# 			fileName, fileExtension = os.path.splitext(dirfile)
-	# 			if fileExtension == ".lua":
-	# 				fileList.append(dirfile)
-	# 			elif os.path.isdir(dirfile):
-	# 				fileList += self.get_javascript_files(dirfile, *args) 
-
-	# 	print("File list size: " + str(len(fileList)))    
-	# 	return fileList
-
-	def get_lua_files2(self, folder, *args):
+	def get_lua_files(self, folder, *args):
 		fileList = []
 		for root, dirs, files in os.walk(folder):
 			
@@ -104,13 +87,11 @@ class RapidCollectorThread(threading.Thread):
 				if name.endswith("lua"):
 					full_path = os.path.abspath(os.path.join(root, name))
 					fileList.append(full_path)
-
-		#print("File list size: " + str(len(fileList)))    
 		return fileList
 
 	def run(self):
 		for folder in self.folders:
-			luafiles = self.get_lua_files2(folder)
+			luafiles = self.get_lua_files(folder)
 			for file_name in luafiles:
 				self.save_method_signature(file_name)
 
@@ -127,7 +108,6 @@ class RapidFunctionStorage():
 
 	@staticmethod
 	def addFunction(name, signature, filename):
-		#print("adding function " + name + ", " + signature + ", " + filename)
 		RapidFunctionStorage.functions.append(Method(name, signature, filename))
 	
 	@staticmethod
@@ -143,7 +123,7 @@ class RapidFunctionStorage():
 				for variable in variables:
 					signature = signature + "${"+str(index)+":"+variable+"}"
 					if index < len(variables):
-						signature = signature + ", "
+						signature = signature + ","
 					index = index+1
 
 				method_str_to_show = method_obj.name() + '(' + method_obj.signature() +')'
@@ -155,34 +135,24 @@ class RapidFunctionStorage():
 class RapidCollector(sublime_plugin.EventListener):
 	applyAutoComplete = False
 
-	def on_post_save(self, view):
-		RapidFunctionStorage.clear()
-		folders = view.window().folders()
-		if RapidCollectorThread.instance != None:
-			RapidCollectorThread.instance.stop()
-		RapidCollectorThread.instance = RapidCollectorThread(folders, 30)
-		RapidCollectorThread.instance.start()
+	# def on_post_save(self, view):
+		# RapidFunctionStorage.clear()
+		# folders = view.window().folders()
+		# if RapidCollectorThread.instance != None:
+		# 	RapidCollectorThread.instance.stop()
+		# RapidCollectorThread.instance = RapidCollectorThread(folders, 30)
+		# RapidCollectorThread.instance.start()
 
 	def on_query_completions(self, view, prefix, locations):
-		#print("on_query_completions: " + str(RapidCollector.applyAutoComplete))
 		if RapidCollector.applyAutoComplete:
 			RapidCollector.applyAutoComplete = False
 			if view.file_name() != None and '.lua' in view.file_name():
 				return RapidFunctionStorage.getAutoCompleteList(prefix)
 		completions = []
-		#print("Returning standard stuff")
 		return (completions, sublime.INHIBIT_EXPLICIT_COMPLETIONS)
 	
-	# def on_query_completions(self, view, prefix, locations):
-	# 	completions = []
-	# 	if view.file_name() != None and '.lua' in view.file_name():
-	# 		return RapidFunctionStorage.getAutoCompleteList(prefix)
-	# 	completions.sort()
-	# 	return (completions, sublime.INHIBIT_EXPLICIT_COMPLETIONS)
-
 class RapidAutoCompleteCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
-		#print("AutoCompleteCommand start")
 		RapidCollector.applyAutoComplete = True
 		self.view.run_command('auto_complete')
 

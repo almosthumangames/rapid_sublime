@@ -33,15 +33,15 @@ class RapidOutputView():
 				RapidOutputView.output.set_scratch(True)
 				RapidOutputView.output.set_name(RapidOutputView.name)
 				sublime.windows()[0].focus_group(0)
-				#output.settings().set('server_output', True)
 		return RapidOutputView.output
 
 
 	@staticmethod
 	def printMessage(msg):
-		view = RapidOutputView.getOutputView()		
-		view.set_syntax_file("Packages/Lua/Lua.tmLanguage")
-		#print("Syntax: " + view.settings().get('syntax'))
+		view = RapidOutputView.getOutputView()	
+		
+		if view.settings().get('syntax') != "Packages/Lua/Lua.tmLanguage":
+			view.set_syntax_file("Packages/Lua/Lua.tmLanguage")
 			
 		with Edit(RapidOutputView.output) as edit:
 			if not '\n' in msg:
@@ -64,9 +64,9 @@ class RapidOutputViewListener(sublime_plugin.EventListener):
 
 class RapidDoubleClick(sublime_plugin.WindowCommand):
 	def run(self):
-		view = self.window.active_view()
+		view = sublime.active_window().active_view()
+		#view = self.window.active_view()
 		if view.name() == RapidOutputView.name:
-			#RapidOutputView.printMessage("Double clicked " + RapidOutputView.name)
 			sel = view.sel()
 			r = sel[0]
 			s = view.line(r)
@@ -75,7 +75,6 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 
 			file_name_and_row = re.search(r'[\w\.-]+.lua:\d{1,16}', line)
 			if file_name_and_row:
-				#parse file name and row to separate variables
 				test = file_name_and_row.group().split(':')
 				file_name = test[0]
 				file_row = test[1]
@@ -86,7 +85,6 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 
 				for window in sublime.windows():
 					for folder in window.folders():	
-						#print(folder)
 						
 						for root, dirs, files in os.walk(folder):
 							if path_found:
@@ -106,21 +104,17 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 				for window in sublime.windows():
 					view = window.find_open_file(path)
 					if view != None:
-						#focus on open file
 						window.open_file(path+":"+file_row, sublime.ENCODED_POSITION)
-						#print("File name: " + view.file_name())
 						window.focus_view(view)
 						break;
 				if view == None:
-					#print("file is not open in window")
 					sublime.windows()[0].focus_group(0)
 					view = file_window.open_file(path+":"+file_row, sublime.ENCODED_POSITION)
-					#print("File name: " + view.file_name())
-		# else:
-			# system_command = args["command"] if "command" in args else None
-			# if system_command:
-			# 	system_args = dict({"event": args["event"]}.items() + args["args"].items())
-			# 	self.view.run_command(system_command, system_args)
+		else:
+			system_command = args["command"] if "command" in args else None
+			if system_command:
+				system_args = dict({"event": args["event"]}.items() + args["args"].items())
+				self.view.run_command(system_command, system_args)
 
 class RapidCloseOutputViewCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
@@ -145,3 +139,36 @@ class RapidOutputEventListener(sublime_plugin.EventListener):
 					if view.name() == RapidOutputView.name:
 						return True
 		return False
+
+#DEBUG: Double-click testing
+
+# class MySpecialDoubleclickCommand(sublime_plugin.TextCommand):
+# 	def run_(self, cmd, args):
+# 		if self.view.name() == RapidOutputView.name:
+# 			print("yippee-ki-yea!")
+# 		else:
+# 			system_command = args["command"] if "command" in args else None
+# 			if system_command:
+# 				print("self: " + str(self))
+
+# 				d = args["args"].items()
+# 				z = args["event"].items() 
+# 				temp = {}
+# 				temp = dict({"event" : args["event"].items() | args["args"].items()})
+# 				print("d: " + str(d))
+# 				print("z: " + str(z))
+# 				print("temp: " + str(temp))
+# 				#system_args = dict({"event" : d})
+# 				#system_args = dict({"event" : args["event"].items()}, {"args" : args["args"].items()})
+# 				print("System.command: " + str(system_command))
+# 				#print("System.args: " + str(system_args))
+# 				self.view.run_command(system_command, d)
+
+# 				#system_args = dict({"event": args["event"]}.items() + args["args"].items())
+# 				#self.view.run_command(system_command, system_args)
+
+	# {
+	# 	"button": "button1", "count": 2,
+	# 	"press_command": "my_special_doubleclick",
+	# 	"press_args": {"command": "drag_select", "args": {"by": "words"}}
+	# }

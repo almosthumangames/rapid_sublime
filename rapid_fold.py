@@ -78,10 +78,8 @@ class RapidFoldUnfoldCommand(sublime_plugin.TextCommand):
 		cursor_position = self.view.sel()[0].begin()
 		cursor_line = self.view.line(cursor_position)
 
-		#check folding cases
 		cursor_at_beginning = False
 		cursor_at_end = False
-		#cursor_at_indent = False
 
 		if self.view.substr(cursor_line).startswith('function') or self.view.substr(cursor_line).startswith("local function"):
 			cursor_at_beginning = True
@@ -161,7 +159,9 @@ class RapidFoldUnfoldCommand(sublime_plugin.TextCommand):
 		next_line = self.view.line(self.view.text_point(row+1, 0))
 		next_next_line = self.view.line(self.view.text_point(row+2, 0))
 
-		if self.view.substr(next_line).strip() == "" and self.view.substr(next_next_line).startswith("function"):
+		if ( self.view.substr(next_line).strip() == "" and 
+			(self.view.substr(next_next_line).startswith("function") or 
+			self.view.substr(next_next_line).startswith("local function")) ):
 			unfold_result = self.view.unfold(self.view.line(self.view.text_point(row+3, 0)))
 			if len(unfold_result) > 0: 
 				#next block is folded, should be folded back

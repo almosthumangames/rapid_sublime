@@ -40,6 +40,7 @@ class Method:
 
 class RapidCollectorThread(threading.Thread):
 	instance = None
+
 	MAX_WORD_SIZE = 100
 	MAX_FUNC_SIZE = 50
 
@@ -53,22 +54,49 @@ class RapidCollectorThread(threading.Thread):
 	def __init__(self, folders, timeout):
 		self.folders = folders
 		self.timeout = timeout
+
 		self.exclude_folders = False
 		self.excluded_folders = []
 		self.getExcludedFolders()
+
+		self.save_method_signatures()
+		self.parse_now = False
+		self.file_for_parsing = ""
+		self.is_running = True
+
 		threading.Thread.__init__(self)
 		RapidCollectorThread.instance = self
 
+	#Save all method signatures from all project folders
+	def save_method_signatures(self):
+		for folder in self.folders:
+			luafiles = self.get_lua_files(folder)
+			for file_name in luafiles:
+				functions = []
+				file_lines = open(file_name, 'r')
+				for line in file_lines:
+					if "function" in line:
+						matches = re.search('function\s\w+[:\.](\w+)\((.*)\)', line)
+						matches2 = re.search('function\s*(\w+)\s*\((.*)\)', line)
+						if matches != None and (len(matches.group(1)) < self.MAX_FUNC_SIZE and len(matches.group(2)) < self.MAX_FUNC_SIZE):
+							functions.append(Method(matches.group(1), matches.group(2), basename(file_name)))
+						elif matches2 != None and (len(matches2.group(1)) < self.MAX_FUNC_SIZE and len(matches2.group(2)) < self.MAX_FUNC_SIZE):
+							functions.append(Method(matches2.group(1), matches2.group(2), basename(file_name)))
+				RapidFunctionStorage.addFunctions(functions, file_name)
+
+	#Save method signatures from the given file
 	def save_method_signature(self, file_name):
+		functions = []
 		file_lines = open(file_name, 'r')
 		for line in file_lines:
 			if "function" in line:
 				matches = re.search('function\s\w+[:\.](\w+)\((.*)\)', line)
 				matches2 = re.search('function\s*(\w+)\s*\((.*)\)', line)
 				if matches != None and (len(matches.group(1)) < self.MAX_FUNC_SIZE and len(matches.group(2)) < self.MAX_FUNC_SIZE):
-					RapidFunctionStorage.addFunction(matches.group(1), matches.group(2), basename(file_name))
+					functions.append(Method(matches.group(1), matches.group(2), basename(file_name)))
 				elif matches2 != None and (len(matches2.group(1)) < self.MAX_FUNC_SIZE and len(matches2.group(2)) < self.MAX_FUNC_SIZE):
-					RapidFunctionStorage.addFunction(matches2.group(1), matches2.group(2), basename(file_name))
+					functions.append(Method(matches2.group(1), matches2.group(2), basename(file_name)))
+		RapidFunctionStorage.addFunctions(functions, file_name)
 
 	def get_lua_files(self, folder, *args):
 		fileList = []
@@ -90,58 +118,61 @@ class RapidCollectorThread(threading.Thread):
 		return fileList
 
 	def run(self):
-		for folder in self.folders:
-			luafiles = self.get_lua_files(folder)
-			for file_name in luafiles:
-				self.save_method_signature(file_name)
+		while self.is_running:
+			if self.parse_now and self.file_for_parsing:
+				self.save_method_signature(self.file_for_parsing)
+				self.parse_now = False
+			time.sleep(0)
+
+	def parseAutoCompleteData(self, view):
+		self.file_for_parsing = view.file_name()
+		self.parse_now = True
 
 	def stop(self):
-		if self.isAlive():
-			self._Thread__stop()
+		self.is_running = False
 
 class RapidFunctionStorage():
-	functions = []
+	funcs = {}
 
 	@staticmethod
-	def clear():
-		RapidFunctionStorage.functions = []
+	def addFunctions(functions, filename):
+		RapidFunctionStorage.funcs[filename] = functions
 
 	@staticmethod
-	def addFunction(name, signature, filename):
-		RapidFunctionStorage.functions.append(Method(name, signature, filename))
-	
+	def removeFunctions(filename):
+		del RapidFunctionStorage.funcs[filename]
+
 	@staticmethod
 	def getAutoCompleteList(word):
 		autocomplete_list = []
-		for method_obj in RapidFunctionStorage.functions:
-			if word.lower() in method_obj.name().lower():
-				
-				#parse method variables
-				variables = method_obj.signature().split(",")
-				signature = ""
-				index = 1
-				for variable in variables:
-					signature = signature + "${"+str(index)+":"+variable+"}"
-					if index < len(variables):
-						signature = signature + ","
-					index = index+1
+		for key in RapidFunctionStorage.funcs:
+			functions = RapidFunctionStorage.funcs[key]
+			for method_obj in functions:
+				if word.lower() in method_obj.name().lower():
+					
+					#parse method variables
+					variables = method_obj.signature().split(",")
+					signature = ""
+					index = 1
+					for variable in variables:
+						signature = signature + "${"+str(index)+":"+variable+"}"
+						if index < len(variables):
+							signature = signature + ","
+						index = index+1
 
-				method_str_to_show = method_obj.name() + '(' + method_obj.signature() +')'
-				method_str_to_append = method_obj.name() + '(' + signature + ')'
-				method_file_location = method_obj.filename();
-				autocomplete_list.append((method_str_to_show + '\t' + method_file_location, method_str_to_append)) 
+					method_str_to_show = method_obj.name() + '(' + method_obj.signature() +')'
+					method_str_to_append = method_obj.name() + '(' + signature + ')'
+					method_file_location = method_obj.filename();
+					autocomplete_list.append((method_str_to_show + '\t' + method_file_location, method_str_to_append)) 
 		return autocomplete_list	
 
 class RapidCollector(sublime_plugin.EventListener):
 	applyAutoComplete = False
+	parseAutoComplete = False
 
-	# def on_post_save(self, view):
-		# RapidFunctionStorage.clear()
-		# folders = view.window().folders()
-		# if RapidCollectorThread.instance != None:
-		# 	RapidCollectorThread.instance.stop()
-		# RapidCollectorThread.instance = RapidCollectorThread(folders, 30)
-		# RapidCollectorThread.instance.start()
+	def on_post_save(self, view):
+		if RapidCollector.parseAutoComplete:
+			RapidCollectorThread.instance.parseAutoCompleteData(view)
 
 	def on_query_completions(self, view, prefix, locations):
 		if RapidCollector.applyAutoComplete:
@@ -159,9 +190,14 @@ class RapidAutoCompleteCommand(sublime_plugin.TextCommand):
 class RapidStartCollectorCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		print("Collecting function definitions for autocomplete...")
-		RapidFunctionStorage.clear()
+
+		settings = RapidSettings().getSettings()		
+		if "ParseAutoCompleteOnSave" in settings:
+			RapidCollector.parseAutoComplete = settings["ParseAutoCompleteOnSave"]
+		
 		folders = self.view.window().folders()
 		if RapidCollectorThread.instance != None:
 			RapidCollectorThread.instance.stop()
+			RapidCollectorThread.instance.join()
 		RapidCollectorThread.instance = RapidCollectorThread(folders, 30)
 		RapidCollectorThread.instance.start()

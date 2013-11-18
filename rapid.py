@@ -23,19 +23,16 @@ class RapidConnectionThread(threading.Thread):
 
 	 	try:
 	 		self.sock = socket.create_connection((self.host, self.port))
+	 		RapidOutputView.printMessage("Connected to " + self.host + ".")
+	 		threading.Thread.__init__(self)
+	 		RapidConnectionThread.instance = self
 	 	except OSError as e:
 	 		RapidOutputView.printMessage("Failed to connect to rapid server:\n" + str(e))
-	 		return False
-	 	RapidOutputView.printMessage("Connected to " + self.host + ".")
-	 	threading.Thread.__init__(self)
-	 	RapidConnectionThread.instance = self
 
 	def run(self):
 		self.running = True
 		dataQueue = []
 
-		
-		RapidOutputView.printMessage("Thread started")
 		try:
 			while True:
 				data = self.sock.recv(1).decode()
@@ -51,8 +48,10 @@ class RapidConnectionThread(threading.Thread):
 						#print(datastr)
 						RapidOutputView.printMessage(datastr)
 					del dataQueue[:]
-		except:
-			RapidOutputView.printMessage("Error in connection. Connection closed.")
+		except Exception as ex:
+			template = "An exception of type {0} occured. Arguments:\n{1!r}\n"
+			message = template.format(type(ex).__name__, ex.args)
+			RapidOutputView.printMessage(message)
 
 		self.sock.close()
 		self.running = False
@@ -93,78 +92,10 @@ class RapidHelpCommand(sublime_plugin.TextCommand):
 class RapidEvalCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		RapidConnectionThread.checkConnection()
-		line_contents = self.getLines2()
+		line_contents = self.getLines()
 		RapidConnectionThread.instance.sendString(line_contents)
 
-	# def getLines(self):
-	# 	for region in self.view.sel():
-
-	# 		current_row  = self.view.rowcol(self.view.sel()[0].begin())[0]
-
-	# 		if region.empty():
-	# 			#check if we are evaluating a block instead of line
-	# 			line = self.view.full_line(region)
-	# 			line_contents = self.view.substr(line)
-				
-	# 			print("Line indent level: " + str(self.view.indentation_level(self.view.sel()[0].begin())))
-
-	# 			#eval block
-	# 			if line_contents.find("\t") == 0 or line_contents.find(" ") == 0:
-	# 				start_row = current_row
-	# 				end_row = current_row
-	# 				index = 1
-
-	# 				#find start of the block
-	# 				block_start = False
-	# 				while not block_start:
-	# 					start_row = current_row - index
-	# 					start_line = self.view.full_line(self.view.text_point(start_row, 0))
-	# 					start_line_contents = self.view.substr(start_line)
-	# 					if start_line_contents.find("\t") != 0 and start_line_contents.find(" ") and start_line_contents.strip() != '':
-	# 						block_start = True
-	# 					else:
-	# 						index = index + 1
-
-	# 				#find end of the block
-	# 				index = 1
-	# 				block_end = False
-	# 				while not block_end:
-	# 					end_row = current_row + index
-	# 					end_line = self.view.full_line(self.view.text_point(end_row, 0))
-	# 					end_line_contents = self.view.substr(end_line)
-	# 					if end_line_contents.find("\t") != 0 and start_line_contents.find(" ") and end_line_contents.strip() != '':
-	# 						block_end = True
-	# 					else:
-	# 						index = index + 1
-					
-	# 				start_offset = self.view.text_point(start_row, 0)
-	# 				end_offset = self.view.text_point(end_row+1, 0)
-	# 				block_region = sublime.Region(start_offset, end_offset)
-	# 				line = self.view.full_line(block_region)
-
-	# 				file_row = start_row
-	# 				#print("Sending: " + str(file_row))
-	# 				msg = "Updating " + start_line_contents
-	# 				RapidOutputView.printMessage(msg)
-	# 				file_row_str = str(file_row + 1)
-	# 			else:
-	# 				line = self.view.line(region) #expand the region for full line if no selection
-	# 				file_row_str = str(current_row + 1)
-	# 		else:
-	# 			line = region #get only the selected area
-	# 			file_row_str = str(current_row + 1)
-
-	# 		file_name = ""
-
-	# 		if self.view.file_name() != None:
-	# 			file_name = self.view.file_name().split("\\")[-1]
-			
-	# 		line_str = self.view.substr(line)
-	# 		line_contents = "@" + file_name + ":" + file_row_str + "\n" + line_str + "\000"
-	# 		#print(line_contents)
-	# 		return line_contents
-
-	def getLines2(self):
+	def getLines(self):
 		for region in self.view.sel():
 			cursor_pos = self.view.sel()[0].begin()
 			current_row = self.view.rowcol(cursor_pos)[0]
@@ -174,8 +105,6 @@ class RapidEvalCommand(sublime_plugin.TextCommand):
 				line = self.view.full_line(region)
 				line_contents = self.view.substr(line)
 				
-				#print("Line indent level: " + str(self.view.indentation_level(self.view.sel()[0].begin())))
-
 				#eval block
 				if self.view.indentation_level(cursor_pos) > 0:
 					start_row = current_row
@@ -246,7 +175,6 @@ class RapidCheckServerAndStartupProjectCommand(sublime_plugin.WindowCommand):
 		is_modified = False
 
 		RapidOutputView.printMessage("Loading project settings...")
-		#settings = RapidSettings()
 		startup_path = RapidSettings().getStartupFilePath()
 
 		if startup_path:
@@ -321,8 +249,3 @@ class RapidKillCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		subprocess.call("taskkill /F /IM rapid.exe")
 		RapidOutputView.printMessage("Server disconnected")
-
-class RapidTestCommand(sublime_plugin.TextCommand):
-	def run(self, edit):
-		print("Test!")
-		print(str(settings.test))

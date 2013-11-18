@@ -5,12 +5,28 @@ TODO:
 Must have:
 
 
+Bug report(s) 
+-------------
+-> Create new (lua) function with only one indented line -> no folding marker appears
+-> Create new (lua) function with two or more indeted lines -> folding marker appears, but cursor is thrown in the beginning of the document
+
 Backburner
 ----------
-- Plugin_host.exe crashes when lots of stuff are printed to Server Output View
 - Mouse folding to work like alt+f (not possible at the moment, ST3 limitation)
 - Run RapidOutputView in separate thread? (any advantage with this?)
 - Debugger?
+
+Done in 0.0.13
+----------------------
+- "Thread started" print is not shown anymore
+- Autocomplete gives two spaces in front of a variable, fix it
+- Code is cleaned
+- Autocomplete parser speedup:
+	- Thread is created only in startup, it is then kept alive
+	- All files are scanned only at startup
+	- When a file is saved, only its function definitions are updated into parser
+- Plugin_host.exe testing, for some reason it does not crash anymore
+	- Test again if there are steps to reproduce crashing
 
 Done in 0.0.12
 ----------------------

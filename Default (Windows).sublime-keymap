@@ -29,21 +29,4 @@
     },
     { "keys": ["alt+l"], "command": "rapid_start_collector" },
     { "keys": ["ctrl+space"], "command": "rapid_auto_complete" }
-
-
-    // { "keys": ["escape"], "command": "hide_auto_complete", "context":
-    //     [
-    //         { "key": "auto_complete_visible", "operator": "equal", "operand": true }
-    //     ]
-    // },
-
-
-    // { "keys": ["ctrl+space"], "command": "auto_complete" },
-    // { "keys": ["ctrl+space"], "command": "replace_completion_with_auto_complete", "context":
-    //     [
-    //         { "key": "last_command", "operator": "equal", "operand": "insert_best_completion" },
-    //         { "key": "auto_complete_visible", "operator": "equal", "operand": false },
-    //         { "key": "setting.tab_completion", "operator": "equal", "operand": true }
-    //     ]
-    // }
 ] 

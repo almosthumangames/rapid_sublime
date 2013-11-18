@@ -20,8 +20,6 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 			if "ExcludedFolders" in settings:
 				self.excluded_folders = settings["ExcludedFolders"]
 			self.folders_fetched = True
-			# print("Exclude folders: " + str(self.exclude_folders))
-			# print("Excluded folders: " + str(self.excluded_folders))
 
 	def run(self, edit):
 		self.getExcludedFolders()
@@ -62,10 +60,8 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 
 	def find(self, pattern):	
 		# full_time1 = time.clock()
-		# lua_files = 0
 
 		pattern = '.*'+pattern+'.*\(.*\)'
-		#print("(Find) Regex pattern: " + pattern)
 
 		for folder in sublime.active_window().folders():		
 			for root, dirs, files in os.walk(folder):
@@ -86,11 +82,9 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 					elif name.endswith("lua"):
 						full_path = os.path.abspath(os.path.join(root, name))
 						self.findLua(full_path, pattern)
-						#lua_files = lua_files + 1
 
 		# full_time2 = time.clock()
 		# print("Whole op took: " + str(full_time2-full_time1))
-		# print("Processed " + str(lua_files) + " lua files")
 
 	def findCpp(self, filepath, pattern):
 		f = open(filepath, "r").read()
@@ -98,7 +92,6 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 		for func in function_list:
 			lower_line = func.lower()
 			match = re.search(pattern, lower_line)
-			#match = re.search('.*'+pattern+'.*\(.*\)', lower_line)
 			if match != None:
 				func = func.replace("///", "").strip()
 				RapidOutputView.printMessage(func)
@@ -109,7 +102,6 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 		for func in function_list:
 			lower_line = func.lower()
 			match = re.search(pattern, lower_line)
-			#match = re.search('.*'+pattern+'.*\(.*\)', lower_line)
 			if match != None:
 				line = func.strip()
 				RapidOutputView.printMessage(func)
@@ -124,7 +116,6 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 		#convert wildcards to regular expression
 		pattern = pattern.replace('.', '[\.:]').replace('*', '.*')
 		search_pattern = '\s' + pattern + '\(.*\)'
-		#print("(Find class) Regex pattern: " + search_pattern)
 		
 		for folder in sublime.active_window().folders():
 			for root, dirs, files in os.walk(folder):
@@ -150,7 +141,6 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 		function_list = re.findall('///.*\n', f)
 		for func in function_list:
 			lower_line = func.lower()
-			# match = re.search('\s' + pattern + '\(.*\)', lower_line)
 			match = re.search(pattern, lower_line)
 			if match != None:
 				func = func.replace("///", "").strip()
@@ -162,6 +152,5 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 		for func in function_list:
 			lower_line = func.lower()
 			match = re.search(pattern, lower_line)
-			#match = re.search('\s' + pattern + '\(.*\)', lower_line)
 			if match != None:
 				RapidOutputView.printMessage(func)

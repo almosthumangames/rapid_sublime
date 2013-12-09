@@ -1,6 +1,7 @@
 import sublime, sublime_plugin
 import re
 import os
+import sublime_api
 
 from .edit import Edit
 
@@ -143,32 +144,20 @@ class RapidOutputEventListener(sublime_plugin.EventListener):
 #DEBUG: Double-click testing
 
 # class MySpecialDoubleclickCommand(sublime_plugin.TextCommand):
-# 	def run_(self, cmd, args):
-# 		if self.view.name() == RapidOutputView.name:
-# 			print("yippee-ki-yea!")
-# 		else:
-# 			system_command = args["command"] if "command" in args else None
-# 			if system_command:
-# 				print("self: " + str(self))
+#  	def run_(self, cmd, args):
+#   		if self.view.name() == RapidOutputView.name:
+#   			print("yippee-ki-yea!")
+#   		else:
+#   			system_command = args["command"] if "command" in args else None
+#   			if system_command:
+#   				system_args = dict({"event" : args["event"].items() | args["args"].items()})
+#   				#self.view.run_command(self.view.id, system_command, system_args)
+#   				#self.view.run_command(system_command, system_args)
+#   				view_id = sublime.active_window().active_view().id()
+#   				sublime_api.view_run_command(view_id, cmd, args)
 
-# 				d = args["args"].items()
-# 				z = args["event"].items() 
-# 				temp = {}
-# 				temp = dict({"event" : args["event"].items() | args["args"].items()})
-# 				print("d: " + str(d))
-# 				print("z: " + str(z))
-# 				print("temp: " + str(temp))
-# 				#system_args = dict({"event" : d})
-# 				#system_args = dict({"event" : args["event"].items()}, {"args" : args["args"].items()})
-# 				print("System.command: " + str(system_command))
-# 				#print("System.args: " + str(system_args))
-# 				self.view.run_command(system_command, d)
-
-# 				#system_args = dict({"event": args["event"]}.items() + args["args"].items())
-# 				#self.view.run_command(system_command, system_args)
-
-	# {
-	# 	"button": "button1", "count": 2,
-	# 	"press_command": "my_special_doubleclick",
-	# 	"press_args": {"command": "drag_select", "args": {"by": "words"}}
-	# }
+# 	{
+# 		"button": "button1", "count": 2,
+# 		"press_command": "my_special_doubleclick",
+# 		"press_args": {"command": "drag_select", "args": {"by": "words"}}
+# 	}

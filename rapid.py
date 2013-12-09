@@ -16,18 +16,22 @@ class RapidConnectionThread(threading.Thread):
 	instance = None
 
 	def __init__(self):
-	 	self.host = "localhost"
-	 	self.port = 4444
-	 	self.sock = None
-	 	self.running = False
+		self.host = "localhost"
+		settings = RapidSettings().getSettings()
+		if "Host" in settings:
+			self.host = settings["Host"]
 
-	 	try:
-	 		self.sock = socket.create_connection((self.host, self.port))
-	 		RapidOutputView.printMessage("Connected to " + self.host + ".")
-	 		threading.Thread.__init__(self)
-	 		RapidConnectionThread.instance = self
-	 	except OSError as e:
-	 		RapidOutputView.printMessage("Failed to connect to rapid server:\n" + str(e))
+		self.port = 4444
+		self.sock = None
+		self.running = False
+
+		try:
+			self.sock = socket.create_connection((self.host, self.port))
+			RapidOutputView.printMessage("Connected to " + self.host + ".")
+			threading.Thread.__init__(self)
+			RapidConnectionThread.instance = self
+		except OSError as e:
+			RapidOutputView.printMessage("Failed to connect to rapid server:\n" + str(e))
 
 	def run(self):
 		self.running = True
@@ -166,7 +170,7 @@ class RapidEvalCommand(sublime_plugin.TextCommand):
 
 class RapidCheckServerAndStartupProjectCommand(sublime_plugin.WindowCommand):
 	def run(self):
-		#print("Rapid Check Server")
+		print("Rapid Check Server")
 		self.view = self.window.active_view()
 		self.view.run_command('rapid_output_view_clear')
 
@@ -212,6 +216,15 @@ class RapidCheckServerAndStartupProjectCommand(sublime_plugin.WindowCommand):
 
 class RapidConnect():
 	def __init__(self):
+
+		
+		if os.name != "nt":
+			return
+
+		settings = RapidSettings().getSettings()
+		if "Host" in settings and settings["Host"] != "localhost":
+			return
+
 		rapid_running = True
 
 		rapid = subprocess.check_output("tasklist /FI \"IMAGENAME eq rapid.exe\" /FO CSV")
@@ -227,7 +240,6 @@ class RapidConnect():
 
 		rapid_path = ""
 		rapid_exe = ""
-		settings = RapidSettings().getSettings()
 		if "RapidPath" in settings:
 			rapid_path = settings["RapidPath"]
 		if "RapidExe" in settings:

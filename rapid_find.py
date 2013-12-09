@@ -59,7 +59,7 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 	##########################################
 
 	def find(self, pattern):	
-		# full_time1 = time.clock()
+		#full_time1 = time.clock()
 
 		pattern = '.*'+pattern+'.*\(.*\)'
 
@@ -83,8 +83,8 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 						full_path = os.path.abspath(os.path.join(root, name))
 						self.findLua(full_path, pattern)
 
-		# full_time2 = time.clock()
-		# print("Whole op took: " + str(full_time2-full_time1))
+		#full_time2 = time.clock()
+		#print("Whole op took: " + str(full_time2-full_time1))
 
 	def findCpp(self, filepath, pattern):
 		f = open(filepath, "r").read()

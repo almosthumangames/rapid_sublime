@@ -53,5 +53,4 @@ class RapidSettings():
 		if self.startupProjectExists():	
 			with open(self.getStartupFilePath(), "r") as startup_project_file:
 				data = startup_project_file.read()
-				#print(data)
 		return data

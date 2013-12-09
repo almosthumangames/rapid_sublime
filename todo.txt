@@ -13,8 +13,11 @@ Bug report(s)
 Backburner
 ----------
 - Mouse folding to work like alt+f (not possible at the moment, ST3 limitation)
-- Run RapidOutputView in separate thread? (any advantage with this?)
 - Debugger?
+
+Done in 0.0.14
+----------------------
+- "Host" parameter in grimrock2.rapid_sublime file. If not present, defaults to "localhost"
 
 Done in 0.0.13
 ----------------------

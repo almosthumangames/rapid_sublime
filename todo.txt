@@ -15,6 +15,11 @@ Backburner
 - Mouse folding to work like alt+f (not possible at the moment, ST3 limitation)
 - Debugger?
 
+Done in 0.0.15
+----------------------
+- Preliminary key mapping for OSX
+- Prelminary mouse mapping for OSX
+
 Done in 0.0.14
 ----------------------
 - "Host" parameter in grimrock2.rapid_sublime file. If not present, defaults to "localhost"

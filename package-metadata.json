@@ -1,6 +1,7 @@
 {
     "name": "Rapid",
     "details": "https://github.com/almosthumangames/rapid_sublime",
+    "version": "0.0.15",
     "releases": [
         {
         	"name": "Rapid",

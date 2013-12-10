@@ -19,6 +19,7 @@ Done in 0.0.15
 ----------------------
 - Preliminary key mapping for OSX
 - Prelminary mouse mapping for OSX
+- Added .no-sublime-package file 
 
 Done in 0.0.14
 ----------------------

@@ -1,0 +1,6 @@
+Rapid Sublime
+(c) Almost Human 2013
+---------------------
+
+v.0.0.15:
+- Preliminary OSX support

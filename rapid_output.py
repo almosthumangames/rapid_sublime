@@ -80,12 +80,16 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 				file_name = test[0]
 				file_row = test[1]
 
+				#print(file_name)
+				#print(file_row)
+
 				path_found = False
 				path = None
 				file_window = None
 
 				for window in sublime.windows():
 					for folder in window.folders():	
+
 						
 						for root, dirs, files in os.walk(folder):
 							if path_found:
@@ -99,6 +103,8 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 									break
 
 				if not path_found:
+					#todo: check open files that are not in the folders yet!
+					#print("path not found")
 					return
 
 				view = None
@@ -140,6 +146,29 @@ class RapidOutputEventListener(sublime_plugin.EventListener):
 					if view.name() == RapidOutputView.name:
 						return True
 		return False
+
+class RapidFileOpenListener(sublime_plugin.EventListener):
+
+	# empty files are always created on the focus_group(0)
+	def on_new(self, view):
+		window = sublime.active_window()
+		window.focus_group(0)
+		print("on_new")
+
+	# loaded files are always brought to focus_group(0)
+	def on_load(self, view):
+		window = sublime.active_window()
+		if window.active_group() != 0:
+			active_view = window.active_view_in_group(0)
+			active_group, active_view_index = window.get_view_index(active_view)
+			print(active_view_index)
+			if active_view_index == -1:
+				views = window.views_in_group(0)
+				active_view_index = len(views)
+			else:
+				active_view_index = active_view_index + 1
+			window.focus_group(0)
+			window.set_view_index(view, 0, active_view_index)
 
 #DEBUG: Double-click testing
 

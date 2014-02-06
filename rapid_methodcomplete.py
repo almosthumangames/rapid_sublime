@@ -151,13 +151,13 @@ class RapidFunctionStorage():
 				if word.lower() in method_obj.name().lower():
 					
 					#parse method variables
-					variables = method_obj.signature().split(",")
+					variables = method_obj.signature().split(", ")
 					signature = ""
 					index = 1
 					for variable in variables:
 						signature = signature + "${"+str(index)+":"+variable+"}"
 						if index < len(variables):
-							signature = signature + ","
+							signature = signature + ", "
 						index = index+1
 
 					method_str_to_show = method_obj.name() + '(' + method_obj.signature() +')'

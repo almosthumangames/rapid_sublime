@@ -9,16 +9,23 @@ Bug report(s)
 -------------
 -> Create new (lua) function with only one indented line -> no folding marker appears
 -> Create new (lua) function with two or more indeted lines -> folding marker appears, but cursor is thrown in the beginning of the document
+[Seems to be limitation in ST3, not easily fixed by plugin code]
 
 Backburner
 ----------
 - Mouse folding to work like alt+f (not possible at the moment, ST3 limitation)
 - Debugger?
 
+Done in 0.0.16
+--------------
+- Open new file always to first view (not next to server output view) 
+- Open existing file always to first focus group (i.e. in main window, not next to server output view)
+- Autocomplete method variables do not include the space after comma to the variable name
+
 Done in 0.0.15
 ----------------------
 - Preliminary key mapping for OSX
-- Prelminary mouse mapping for OSX
+- Preliminary mouse mapping for OSX
 - Added .no-sublime-package file 
 
 Done in 0.0.14

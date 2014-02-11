@@ -42,7 +42,7 @@ class RapidCollectorThread(threading.Thread):
 	instance = None
 
 	MAX_WORD_SIZE = 100
-	MAX_FUNC_SIZE = 50
+	MAX_FUNC_SIZE = 200
 
 	def getExcludedFolders(self):
 		settings = RapidSettings().getSettings()		

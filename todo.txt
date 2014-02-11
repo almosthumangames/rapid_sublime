@@ -16,6 +16,11 @@ Backburner
 - Mouse folding to work like alt+f (not possible at the moment, ST3 limitation)
 - Debugger?
 
+Done in 0.0.17
+--------------
+- Fixed bug: shift+space autocomplete does not find gui:beginscrollarea() method
+	- Autocomplete works now with long method declarations
+
 Done in 0.0.16
 --------------
 - Open new file always to first view (not next to server output view) 

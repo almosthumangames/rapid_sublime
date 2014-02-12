@@ -41,8 +41,8 @@ class Method:
 class RapidCollectorThread(threading.Thread):
 	instance = None
 
-	MAX_WORD_SIZE = 100
-	MAX_FUNC_SIZE = 200
+	#MAX_WORD_SIZE = 100
+	#MAX_FUNC_SIZE = 200
 
 	def getExcludedFolders(self):
 		settings = RapidSettings().getSettings()		
@@ -78,9 +78,9 @@ class RapidCollectorThread(threading.Thread):
 					if "function" in line:
 						matches = re.search('function\s\w+[:\.](\w+)\((.*)\)', line)
 						matches2 = re.search('function\s*(\w+)\s*\((.*)\)', line)
-						if matches != None and (len(matches.group(1)) < self.MAX_FUNC_SIZE and len(matches.group(2)) < self.MAX_FUNC_SIZE):
+						if matches != None:
 							functions.append(Method(matches.group(1), matches.group(2), basename(file_name)))
-						elif matches2 != None and (len(matches2.group(1)) < self.MAX_FUNC_SIZE and len(matches2.group(2)) < self.MAX_FUNC_SIZE):
+						elif matches2 != None:
 							functions.append(Method(matches2.group(1), matches2.group(2), basename(file_name)))
 				RapidFunctionStorage.addFunctions(functions, file_name)
 
@@ -92,9 +92,9 @@ class RapidCollectorThread(threading.Thread):
 			if "function" in line:
 				matches = re.search('function\s\w+[:\.](\w+)\((.*)\)', line)
 				matches2 = re.search('function\s*(\w+)\s*\((.*)\)', line)
-				if matches != None and (len(matches.group(1)) < self.MAX_FUNC_SIZE and len(matches.group(2)) < self.MAX_FUNC_SIZE):
+				if matches != None:
 					functions.append(Method(matches.group(1), matches.group(2), basename(file_name)))
-				elif matches2 != None and (len(matches2.group(1)) < self.MAX_FUNC_SIZE and len(matches2.group(2)) < self.MAX_FUNC_SIZE):
+				elif matches2 != None:
 					functions.append(Method(matches2.group(1), matches2.group(2), basename(file_name)))
 		RapidFunctionStorage.addFunctions(functions, file_name)
 

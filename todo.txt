@@ -16,6 +16,10 @@ Backburner
 - Mouse folding to work like alt+f (not possible at the moment, ST3 limitation)
 - Debugger?
 
+Done in 0.0.18
+--------------
+- Fixed bug: Server Output View opens in wrong group if it is closed and is opened with ctrl+e or alt+x
+
 Done in 0.0.17
 --------------
 - Fixed bug: shift+space autocomplete does not find gui:beginscrollarea() method

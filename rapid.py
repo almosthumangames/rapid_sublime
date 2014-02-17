@@ -95,9 +95,11 @@ class RapidHelpCommand(sublime_plugin.TextCommand):
 
 class RapidEvalCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
+		#RapidOutputView.opening = True
 		RapidConnectionThread.checkConnection()
 		line_contents = self.getLines()
 		RapidConnectionThread.instance.sendString(line_contents)
+		#RapidOutputView.opening = False
 
 	def getLines(self):
 		for region in self.view.sel():
@@ -170,7 +172,6 @@ class RapidEvalCommand(sublime_plugin.TextCommand):
 
 class RapidCheckServerAndStartupProjectCommand(sublime_plugin.WindowCommand):
 	def run(self):
-		print("Rapid Check Server")
 		self.view = self.window.active_view()
 		self.view.run_command('rapid_output_view_clear')
 
@@ -216,8 +217,7 @@ class RapidCheckServerAndStartupProjectCommand(sublime_plugin.WindowCommand):
 
 class RapidConnect():
 	def __init__(self):
-
-		
+	
 		if os.name != "nt":
 			return
 
@@ -259,5 +259,7 @@ class RapidConnect():
 #For debugging use only, kill rapid exe instantly
 class RapidKillCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
+		if os.name != "nt":
+			return
 		subprocess.call("taskkill /F /IM rapid.exe")
 		RapidOutputView.printMessage("Server disconnected")

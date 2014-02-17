@@ -8,6 +8,7 @@ from .edit import Edit
 class RapidOutputView():
 	name = "Server Output View"
 	output = None
+	opening = False
 
 	@staticmethod
 	def getOutputView():
@@ -36,9 +37,9 @@ class RapidOutputView():
 				sublime.windows()[0].focus_group(0)
 		return RapidOutputView.output
 
-
 	@staticmethod
 	def printMessage(msg):
+		RapidOutputView.opening = True
 		view = RapidOutputView.getOutputView()	
 		
 		if view.settings().get('syntax') != "Packages/Lua/Lua.tmLanguage":
@@ -50,9 +51,26 @@ class RapidOutputView():
 			edit.append(msg)
 			region = RapidOutputView.output.full_line(RapidOutputView.output.size())
 			RapidOutputView.output.show(region)
+		RapidOutputView.opening = False
+
+	@staticmethod
+	def isOpen():
+		if RapidOutputView.output == None:
+			output_view_found = False
+			windows = sublime.windows()
+			for window in windows:
+				views = window.views()
+				for view in views:
+					if view.name() == RapidOutputView.name:
+						output_view_found = True
+						break
+				if output_view_found:
+					break
+			return output_view_found
 
 class RapidOutputViewClearCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
+		RapidOutputView.opening = True
 		view = RapidOutputView.getOutputView()
 		with Edit(view) as edit:
 			edit.erase(sublime.Region(0, RapidOutputView.output.size()))
@@ -149,11 +167,15 @@ class RapidOutputEventListener(sublime_plugin.EventListener):
 
 class RapidFileOpenListener(sublime_plugin.EventListener):
 
-	# empty files are always created on the focus_group(0)
+	# empty files (except Server Output View) are always created on the focus_group(0)
 	def on_new(self, view):
-		window = sublime.active_window()
-		window.focus_group(0)
 		print("on_new")
+		if RapidOutputView.opening == False:
+			window = sublime.active_window()
+			window.focus_group(0)
+		else:
+			RapidOutputView.opening = False
+
 
 	# loaded files are always brought to focus_group(0)
 	def on_load(self, view):
@@ -161,7 +183,7 @@ class RapidFileOpenListener(sublime_plugin.EventListener):
 		if window.active_group() != 0:
 			active_view = window.active_view_in_group(0)
 			active_group, active_view_index = window.get_view_index(active_view)
-			print(active_view_index)
+			#print(active_view_index)
 			if active_view_index == -1:
 				views = window.views_in_group(0)
 				active_view_index = len(views)

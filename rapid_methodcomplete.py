@@ -122,7 +122,7 @@ class RapidCollectorThread(threading.Thread):
 			if self.parse_now and self.file_for_parsing:
 				self.save_method_signature(self.file_for_parsing)
 				self.parse_now = False
-			time.sleep(0)
+			time.sleep(0.1)
 
 	def parseAutoCompleteData(self, view):
 		self.file_for_parsing = view.file_name()

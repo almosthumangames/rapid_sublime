@@ -89,9 +89,9 @@ class RapidCollectorThread(threading.Thread):
 				function_list = re.findall('///.*\(.*\).*\n', file_lines)
 				for func in function_list:
 					func = func.replace("///", "").strip()
-					matches = re.search('\w+[:\.](\w+)\((.*)\)', func)
+					matches = re.search('(\w+)[:\.](\w+)\((.*)\)', func)
 					if matches != None:
-						functions.append(Method(matches.group(1), matches.group(2), basename(file_name)))
+						functions.append(Method(matches.group(2), matches.group(3), matches.group(1)))
 				RapidFunctionStorage.addFunctions(functions, file_name)
 
 	#Save method signatures from the given file

@@ -95,11 +95,9 @@ class RapidHelpCommand(sublime_plugin.TextCommand):
 
 class RapidEvalCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
-		#RapidOutputView.opening = True
 		RapidConnectionThread.checkConnection()
 		line_contents = self.getLines()
 		RapidConnectionThread.instance.sendString(line_contents)
-		#RapidOutputView.opening = False
 
 	def getLines(self):
 		for region in self.view.sel():
@@ -112,7 +110,10 @@ class RapidEvalCommand(sublime_plugin.TextCommand):
 				line_contents = self.view.substr(line)
 				
 				#eval block
-				if self.view.indentation_level(cursor_pos) > 0:
+				#added special case check for comments inside a block which might have no indentation
+				if self.view.indentation_level(cursor_pos) > 0 \
+				or ( self.view.indentation_level(cursor_pos) == 0 \
+				and line_contents.startswith("--") ):
 					start_row = current_row
 					end_row = current_row
 					index = 1
@@ -124,7 +125,9 @@ class RapidEvalCommand(sublime_plugin.TextCommand):
 						start_pos = self.view.text_point(start_row, 0)
 						start_line = self.view.full_line(start_pos)
 						start_line_contents = self.view.substr(start_line)
-						if self.view.indentation_level(start_pos) == 0 and start_line_contents.strip() != '':
+						if self.view.indentation_level(start_pos) == 0 \
+						and	start_line_contents.strip() != '' \
+						and	not start_line_contents.startswith("--"):
 							block_start = True
 						else:
 							index = index + 1
@@ -137,7 +140,9 @@ class RapidEvalCommand(sublime_plugin.TextCommand):
 						end_pos = self.view.text_point(end_row, 0)
 						end_line = self.view.full_line(end_pos)
 						end_line_contents = self.view.substr(end_line)
-						if self.view.indentation_level(end_pos) == 0 and end_line_contents.strip() != '':
+						if self.view.indentation_level(end_pos) == 0 \
+						and end_line_contents.strip() != '' \
+						and not end_line_contents.startswith("--"):
 							block_end = True
 						else:
 							index = index + 1

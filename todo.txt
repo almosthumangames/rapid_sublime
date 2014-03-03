@@ -1,20 +1,21 @@
-Rapid Sublime v.1.0 TODO:
-------------------------
-TODO:
+Rapid Sublime v.1.0:
+--------------------
 
-Must have:
-
-
-Bug report(s) 
--------------
+Bug report(s) & Backburner 
+--------------------------
 -> Create new (lua) function with only one indented line -> no folding marker appears
 -> Create new (lua) function with two or more indeted lines -> folding marker appears, but cursor is thrown in the beginning of the document
-[Seems to be limitation in ST3, not easily fixed by plugin code]
+[These seem to be limitations in ST3, not easy (or even possible?) to fix by plugin code]
 
-Backburner
-----------
-- Mouse folding to work like alt+f (not possible at the moment, ST3 limitation)
-- Debugger?
+- Mouse folding to work like alt+f 
+[Not possible at the moment, this is a ST3 limitation]
+
+- Debugger
+
+Done in 0.1.0
+-------------
+- Autocomplete for CPP files (loaded only in startup)
+- ctrl+e works inside a block even if there are comment lines without indentation
 
 Done in 0.0.18
 --------------

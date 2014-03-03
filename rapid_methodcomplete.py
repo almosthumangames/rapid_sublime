@@ -41,9 +41,6 @@ class Method:
 class RapidCollectorThread(threading.Thread):
 	instance = None
 
-	#MAX_WORD_SIZE = 100
-	#MAX_FUNC_SIZE = 200
-
 	def getExcludedFolders(self):
 		settings = RapidSettings().getSettings()		
 		if "ExcludeFoldersInFind" in settings:
@@ -71,6 +68,8 @@ class RapidCollectorThread(threading.Thread):
 	def save_method_signatures(self):
 		for folder in self.folders:
 			luafiles = self.get_lua_files(folder)
+			cppfiles = self.get_cpp_files(folder)
+			
 			for file_name in luafiles:
 				functions = []
 				file_lines = open(file_name, 'r')
@@ -82,6 +81,17 @@ class RapidCollectorThread(threading.Thread):
 							functions.append(Method(matches.group(1), matches.group(2), basename(file_name)))
 						elif matches2 != None:
 							functions.append(Method(matches2.group(1), matches2.group(2), basename(file_name)))
+				RapidFunctionStorage.addFunctions(functions, file_name)
+			
+			for file_name in cppfiles:
+				functions = []
+				file_lines = open(file_name, "r").read()
+				function_list = re.findall('///.*\(.*\).*\n', file_lines)
+				for func in function_list:
+					func = func.replace("///", "").strip()
+					matches = re.search('\w+[:\.](\w+)\((.*)\)', func)
+					if matches != None:
+						functions.append(Method(matches.group(1), matches.group(2), basename(file_name)))
 				RapidFunctionStorage.addFunctions(functions, file_name)
 
 	#Save method signatures from the given file
@@ -117,6 +127,25 @@ class RapidCollectorThread(threading.Thread):
 					fileList.append(full_path)
 		return fileList
 
+	def get_cpp_files(self, folder, *args):
+		fileList = []
+		for root, dirs, files in os.walk(folder):
+			
+			checkFolder = True
+			if self.exclude_folders:
+				for excluded_folder in self.excluded_folders:
+					if root.lower().startswith(excluded_folder.lower()):			
+						checkFolder = False 
+						break
+				if not checkFolder:
+				 	continue
+						
+			for name in files:
+				if name.endswith("cpp"):
+					full_path = os.path.abspath(os.path.join(root, name))
+					fileList.append(full_path)
+		return fileList
+
 	def run(self):
 		while self.is_running:
 			if self.parse_now and self.file_for_parsing:
@@ -126,7 +155,9 @@ class RapidCollectorThread(threading.Thread):
 
 	def parseAutoCompleteData(self, view):
 		self.file_for_parsing = view.file_name()
-		self.parse_now = True
+		#parse only *.lua files at runtime
+		if self.file_for_parsing.endswith("lua"):
+			self.parse_now = True
 
 	def stop(self):
 		self.is_running = False
@@ -163,6 +194,7 @@ class RapidFunctionStorage():
 					method_str_to_show = method_obj.name() + '(' + method_obj.signature() +')'
 					method_str_to_append = method_obj.name() + '(' + signature + ')'
 					method_file_location = method_obj.filename();
+
 					autocomplete_list.append((method_str_to_show + '\t' + method_file_location, method_str_to_append)) 
 		return autocomplete_list	
 

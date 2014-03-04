@@ -2,16 +2,17 @@ import sublime, sublime_plugin
 import re
 import os
 import sublime_api
-
-from .edit import Edit
+import time
 
 class RapidOutputView():
 	name = "Server Output View"
 	output = None
 	opening = False
+	timer = 0
+	messageQueue = []
 
-	@staticmethod
-	def getOutputView():
+	@classmethod
+	def getOutputView(self):
 		if RapidOutputView.output == None:
 			output_view_found = False
 			windows = sublime.windows()
@@ -37,24 +38,17 @@ class RapidOutputView():
 				sublime.windows()[0].focus_group(0)
 		return RapidOutputView.output
 
-	@staticmethod
-	def printMessage(msg):
-		RapidOutputView.opening = True
-		view = RapidOutputView.getOutputView()	
-		
-		if view.settings().get('syntax') != "Packages/Lua/Lua.tmLanguage":
-			view.set_syntax_file("Packages/Lua/Lua.tmLanguage")
-			
-		with Edit(RapidOutputView.output) as edit:
-			if not '\n' in msg:
-				msg = msg + '\n'
-			edit.append(msg)
-			region = RapidOutputView.output.full_line(RapidOutputView.output.size())
-			RapidOutputView.output.show(region)
-		RapidOutputView.opening = False
+	@classmethod
+	def printMessage(self, msg):
+		RapidOutputView.messageQueue.append(msg)
+		sublime.set_timeout(RapidOutputView.callback(), 100)
 
-	@staticmethod
-	def isOpen():
+	@classmethod
+	def getQueueLen(self):
+		return len(RapidOutputView.messageQueue)
+
+	@classmethod
+	def isOpen(self):
 		if RapidOutputView.output == None:
 			output_view_found = False
 			windows = sublime.windows()
@@ -66,14 +60,43 @@ class RapidOutputView():
 						break
 				if output_view_found:
 					break
-			return output_view_found
+			return output_view_foundanekli
+			
+	@classmethod
+	def callback(self):
+		while len(RapidOutputView.messageQueue) > 0:
+			msg = RapidOutputView.messageQueue.pop(0)
+			view = RapidOutputView.getOutputView()	
+			view.window().run_command("rapid_output_view_insert", {"msg": msg} )
+
+class RapidOutputViewInsertCommand(sublime_plugin.TextCommand):
+	def run(self, edit, msg):
+		RapidOutputView.opening = True
+
+		view = RapidOutputView.getOutputView()	
+		
+		if view.settings().get('syntax') != "Packages/Lua/Lua.tmLanguage":
+			view.set_syntax_file("Packages/Lua/Lua.tmLanguage")
+			
+		if not '\n' in msg:
+			msg = msg + '\n'
+
+		view.set_read_only(False)
+		view.insert(edit, view.size(), msg)
+		view.set_read_only(True)
+
+		region = RapidOutputView.output.full_line(RapidOutputView.output.size())
+		RapidOutputView.output.show(region)
+		RapidOutputView.opening = False
+
 
 class RapidOutputViewClearCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		RapidOutputView.opening = True
 		view = RapidOutputView.getOutputView()
-		with Edit(view) as edit:
-			edit.erase(sublime.Region(0, RapidOutputView.output.size()))
+		view.set_read_only(False)
+		view.erase(edit, sublime.Region(0, RapidOutputView.output.size()))
+		view.set_read_only(True)
 
 class RapidOutputViewListener(sublime_plugin.EventListener):
 	def on_close(self, view):
@@ -169,7 +192,6 @@ class RapidFileOpenListener(sublime_plugin.EventListener):
 
 	# empty files (except Server Output View) are always created on the focus_group(0)
 	def on_new(self, view):
-		print("on_new")
 		if RapidOutputView.opening == False:
 			window = sublime.active_window()
 			window.focus_group(0)

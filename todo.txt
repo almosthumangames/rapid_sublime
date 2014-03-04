@@ -12,6 +12,10 @@ Bug report(s) & Backburner
 
 - Debugger
 
+Done in 0.1.1
+-------------
+- Rapid output view fixes, no more plugin_host.exe crashing
+
 Done in 0.1.0
 -------------
 - Autocomplete for CPP files (loaded only in startup)

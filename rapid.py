@@ -6,7 +6,6 @@ import os
 import subprocess
 import re
 
-from .edit import Edit
 from .rapid_output import RapidOutputView
 from .rapid_parse import RapidSettings
 
@@ -41,7 +40,8 @@ class RapidConnectionThread(threading.Thread):
 			while True:
 				data = self.sock.recv(1).decode()
 				if not data:
-					break
+					RapidOutputView.printMessage("No data")
+					break;
 
 				if data != '\000':
 					dataQueue.append(data)
@@ -49,13 +49,12 @@ class RapidConnectionThread(threading.Thread):
 				if data == '\n' or data == '\000':
 					datastr = "".join(dataQueue)
 					if dataQueue: #dataQueue is not empty
-						#print(datastr)
 						RapidOutputView.printMessage(datastr)
 					del dataQueue[:]
-		except Exception as ex:
-			template = "An exception of type {0} occured. Arguments:\n{1!r}\n"
-			message = template.format(type(ex).__name__, ex.args)
-			RapidOutputView.printMessage(message)
+		except socket.error:
+			RapidOutputView.printMessage("Socket error")
+		except:
+			RapidOutputView.printMessage("Error")
 
 		self.sock.close()
 		self.running = False

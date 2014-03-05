@@ -2,13 +2,10 @@ import sublime, sublime_plugin
 import re
 import os
 import sublime_api
-import time
 
 class RapidOutputView():
 	name = "Server Output View"
 	output = None
-	opening = False
-	timer = 0
 	messageQueue = []
 
 	@classmethod
@@ -27,6 +24,7 @@ class RapidOutputView():
 					break
 
 			if RapidOutputView.output == None:
+				activeView = sublime.windows()[0].active_view()
 				groups = sublime.windows()[0].num_groups()
 				if groups < 2:
 					sublime.windows()[0].set_layout( {"cols": [0.0, 1.0], "rows": [0.0, 0.8, 1.0], "cells": [[0,0,1,1], [0,1,1,2]]} )
@@ -35,7 +33,8 @@ class RapidOutputView():
 				RapidOutputView.output.set_read_only(True)
 				RapidOutputView.output.set_scratch(True)
 				RapidOutputView.output.set_name(RapidOutputView.name)
-				sublime.windows()[0].focus_group(0)
+				sublime.windows()[0].set_view_index(RapidOutputView.output, 1, 0)
+				sublime.windows()[0].focus_view(activeView)
 		return RapidOutputView.output
 
 	@classmethod
@@ -60,7 +59,7 @@ class RapidOutputView():
 						break
 				if output_view_found:
 					break
-			return output_view_foundanekli
+			return output_view_found
 			
 	@classmethod
 	def callback(self):
@@ -71,28 +70,25 @@ class RapidOutputView():
 
 class RapidOutputViewInsertCommand(sublime_plugin.TextCommand):
 	def run(self, edit, msg):
-		RapidOutputView.opening = True
-
 		view = RapidOutputView.getOutputView()	
 		
 		if view.settings().get('syntax') != "Packages/Lua/Lua.tmLanguage":
-			view.set_syntax_file("Packages/Lua/Lua.tmLanguage")
-			
+			view.set_syntax_file("Packages/Lua/Lua.tmLanguage")		
 		if not '\n' in msg:
 			msg = msg + '\n'
-
+		
 		view.set_read_only(False)
 		view.insert(edit, view.size(), msg)
 		view.set_read_only(True)
 
 		region = RapidOutputView.output.full_line(RapidOutputView.output.size())
 		RapidOutputView.output.show(region)
-		RapidOutputView.opening = False
+
 
 
 class RapidOutputViewClearCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
-		RapidOutputView.opening = True
+		#RapidOutputView.opening = True
 		view = RapidOutputView.getOutputView()
 		view.set_read_only(False)
 		view.erase(edit, sublime.Region(0, RapidOutputView.output.size()))
@@ -192,12 +188,8 @@ class RapidFileOpenListener(sublime_plugin.EventListener):
 
 	# empty files (except Server Output View) are always created on the focus_group(0)
 	def on_new(self, view):
-		if RapidOutputView.opening == False:
-			window = sublime.active_window()
-			window.focus_group(0)
-		else:
-			RapidOutputView.opening = False
-
+		window = sublime.active_window()
+		window.focus_group(0)
 
 	# loaded files are always brought to focus_group(0)
 	def on_load(self, view):
@@ -205,7 +197,6 @@ class RapidFileOpenListener(sublime_plugin.EventListener):
 		if window.active_group() != 0:
 			active_view = window.active_view_in_group(0)
 			active_group, active_view_index = window.get_view_index(active_view)
-			#print(active_view_index)
 			if active_view_index == -1:
 				views = window.views_in_group(0)
 				active_view_index = len(views)

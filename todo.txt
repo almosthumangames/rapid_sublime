@@ -12,6 +12,10 @@ Bug report(s) & Backburner
 
 - Debugger
 
+Done in 0.1.2
+-------------
+- fix: ctrl+e and f1 open output view to correct group ( broken in previous update )
+
 Done in 0.1.1
 -------------
 - Rapid output view fixes, no more plugin_host.exe crashing

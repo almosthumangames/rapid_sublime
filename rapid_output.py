@@ -124,24 +124,29 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 				path = None
 				file_window = None
 
-				for window in sublime.windows():
-					for folder in window.folders():	
+				#first check all open files in main window
+				window = sublime.windows()[0]
+				views_in_group = window.views_in_group(0)
+				for view in views_in_group:
+					if view.file_name() != None and view.file_name().endswith(file_name):
+						window.focus_view(view)
+						return
 
-						
+				# if view not found, scan all the folders
+				for window in sublime.windows():
+					for folder in window.folders():			
 						for root, dirs, files in os.walk(folder):
 							if path_found:
 								break
 							for name in files:
-								if name == file_name:
-									path = os.path.abspath(os.path.join(root, name))
-									#print(path)
-									path_found = True
-									file_window = window
-									break
+								if name.endswith(".lua"):
+									if name == file_name:
+										path = os.path.abspath(os.path.join(root, name))
+										path_found = True
+										file_window = window
+										break
 
 				if not path_found:
-					#todo: check open files that are not in the folders yet!
-					#print("path not found")
 					return
 
 				view = None

@@ -128,8 +128,10 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 				window = sublime.windows()[0]
 				views_in_group = window.views_in_group(0)
 				for view in views_in_group:
-					if view.file_name() != None and view.file_name().endswith(file_name):
+					if view.file_name() != None and view.file_name().endswith(file_name):	
+						test = view.text_point(int(file_row), 0)
 						window.focus_view(view)
+						view.show_at_center(test)
 						return
 
 				# if view not found, scan all the folders

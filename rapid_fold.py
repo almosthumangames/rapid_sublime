@@ -1,4 +1,5 @@
 import sublime, sublime_plugin
+#from .rapid_output import RapidOutputView 
 
 def fold_region_from_indent(view, r, include_next_line):
 	if r.b == view.size():
@@ -181,10 +182,21 @@ class RapidFoldUnfoldCommand(sublime_plugin.TextCommand):
 		if self.view.substr(prev_line).strip() == "" and self.view.substr(prev_prev_line).strip() == "end":
 			unfold_result = self.view.unfold(self.view.line(self.view.text_point(row-4, 0)))
 			if len(unfold_result) > 0:
-				#print("prev block is folded, it should include newline to its region")
+				#RapidOutputView.printMessage("prev block is folded, it should include newline to its region")
 				tp = self.view.text_point(row-4, 0)
-				if self.view.indentation_level(tp) > 0:
+				indentation_level = self.view.indentation_level(tp)
+				if indentation_level > 0:
+					#RapidOutputView.printMessage("Indentation level: " + str(indentation_level))
 					new_fold_region = self.view.indented_region(tp)
+					
+					while indentation_level > 1:
+						row, col = self.view.rowcol(new_fold_region.begin())
+						tp = self.view.text_point(row-1, 0)
+						indentation_level = self.view.indentation_level(tp)
+						if self.view.indentation_level(tp) > 0:
+							new_fold_region = self.view.indented_region(tp)
+
+					#RapidOutputView.printMessage(self.view.substr(new_fold_region))
 					if folding:
 						r = fold_region_from_indent(self.view, new_fold_region, True)
 					else:

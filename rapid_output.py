@@ -127,11 +127,14 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 				#first check all open files in main window
 				window = sublime.windows()[0]
 				views_in_group = window.views_in_group(0)
-				for view in views_in_group:
-					if view.file_name() != None and view.file_name().endswith(file_name):	
-						test = view.text_point(int(file_row), 0)
-						window.focus_view(view)
-						view.show_at_center(test)
+				for v in views_in_group:
+					if v.file_name() != None and v.file_name().endswith(file_name):	
+						tp = v.text_point(int(file_row)-1, 0)
+						window.focus_view(v)
+						v.show_at_center(tp)
+						v.sel().clear()
+						v.sel().add(sublime.Region(tp, tp))
+						#view.sel().clear()
 						return
 
 				# if view not found, scan all the folders
@@ -151,6 +154,8 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 				if not path_found:
 					return
 
+				#view.sel().clear()
+				
 				view = None
 				for window in sublime.windows():
 					view = window.find_open_file(path)

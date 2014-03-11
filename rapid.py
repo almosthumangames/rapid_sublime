@@ -98,6 +98,61 @@ class RapidEvalCommand(sublime_plugin.TextCommand):
 		line_contents = self.getLines()
 		RapidConnectionThread.instance.sendString(line_contents)
 
+	# Checks if the cursor is inside lua function() block
+	def checkBlock(self, view, current_row, line_contents, cursor_pos):
+		#added special case check for comments inside a block which might have no indentation
+		if self.view.indentation_level(cursor_pos) > 0 \
+		or ( self.view.indentation_level(cursor_pos) == 0 \
+		and line_contents.startswith("--") ):
+			return True
+		elif line_contents.strip() == '':
+			# cursor might be on an empty unintended row inside block
+			start_row = current_row
+			end_row = current_row
+			index = 1
+
+			# find first previous non-empty row
+			block_start = False
+			while not block_start:
+				start_row = current_row - index
+				start_pos = self.view.text_point(start_row, 0)
+				start_line = self.view.full_line(start_pos)
+				start_line_contents = self.view.substr(start_line)
+				if start_line_contents.strip() != '':
+					block_start = True
+				else:
+					index = index + 1
+
+			#find first next non-empty row
+			index = 1
+			block_end = False
+			while not block_end:
+				end_row = current_row + index
+				end_pos = self.view.text_point(end_row, 0)
+				end_line = self.view.full_line(end_pos)
+				end_line_contents = self.view.substr(end_line)
+				if end_line_contents.strip() != '':
+					block_end = True
+				else:
+					index = index + 1
+
+			# Assume that the cursor is inside a function block if:
+			# 1) start_row and end_row have indentation level > 0 OR
+			# 2) start_row has indentation level > 0 and end_row starts with "end" OR
+			# 3) start_row starts with "function" or "local function" and end_row indentation level > 0
+			if (self.view.indentation_level(start_pos) > 0 and self.view.indentation_level(end_pos) > 0):
+				return True
+			elif (self.view.indentation_level(start_pos) > 0 \
+				and self.view.indentation_level(end_pos) == 0 and end_line_contents.startswith("end")):
+				return True
+			elif (self.view.indentation_level(start_pos) == 0 and self.view.indentation_level(end_pos) > 0) \
+				and (start_line_contents.startswith("function") or start_line_contents.startswith("local function")):
+				return True
+			else:
+				return False
+		else:
+			return False
+
 	def getLines(self):
 		for region in self.view.sel():
 			cursor_pos = self.view.sel()[0].begin()
@@ -108,11 +163,12 @@ class RapidEvalCommand(sublime_plugin.TextCommand):
 				line = self.view.full_line(region)
 				line_contents = self.view.substr(line)
 				
+				# if self.view.indentation_level(cursor_pos) > 0 \
+				# or ( self.view.indentation_level(cursor_pos) == 0 \
+				# and line_contents.startswith("--") ):
+
 				#eval block
-				#added special case check for comments inside a block which might have no indentation
-				if self.view.indentation_level(cursor_pos) > 0 \
-				or ( self.view.indentation_level(cursor_pos) == 0 \
-				and line_contents.startswith("--") ):
+				if self.checkBlock(self.view, current_row, line_contents, cursor_pos) == True:
 					start_row = current_row
 					end_row = current_row
 					index = 1
@@ -170,7 +226,9 @@ class RapidEvalCommand(sublime_plugin.TextCommand):
 			
 			line_str = self.view.substr(line)
 			line_contents = "@" + file_name + ":" + file_row_str + "\n" + line_str + "\000"
-			#print(line_contents)
+			# print("------")
+			# print("sending contents:")
+			# print(line_contents)
 			return line_contents
 
 

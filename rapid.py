@@ -26,7 +26,7 @@ class RapidConnectionThread(threading.Thread):
 
 		try:
 			self.sock = socket.create_connection((self.host, self.port))
-			RapidOutputView.printMessage("Connected to " + self.host + ".")
+			#RapidOutputView.printMessage("Connected to " + self.host + ".")
 			threading.Thread.__init__(self)
 			RapidConnectionThread.instance = self
 		except OSError as e:
@@ -40,7 +40,6 @@ class RapidConnectionThread(threading.Thread):
 			while True:
 				data = self.sock.recv(1).decode()
 				if not data:
-					RapidOutputView.printMessage("No data")
 					break;
 
 				if data != '\000':
@@ -243,6 +242,7 @@ class RapidCheckServerAndStartupProjectCommand(sublime_plugin.WindowCommand):
 
 		RapidOutputView.printMessage("Loading project settings...")
 		startup_path = RapidSettings().getStartupFilePath()
+		#RapidOutputView.printMessage("Startup path: " + startup_path)
 
 		if startup_path:
 			startup_exists = True
@@ -280,48 +280,34 @@ class RapidCheckServerAndStartupProjectCommand(sublime_plugin.WindowCommand):
 class RapidConnect():
 	def __init__(self):
 	
-		if os.name != "nt":
-			return
+		# check if rapid is already running
+		if os.name == "nt":
+			rapid_running = True
+			rapid = subprocess.check_output("tasklist /FI \"IMAGENAME eq rapid.exe\" /FO CSV")
+			rapid_search = re.search(r'rapid.exe', rapid.decode("ISO-8859-1"))
+			if rapid_search == None:
+				rapid_debug = subprocess.check_output("tasklist /FI \"IMAGENAME eq rapid_d.exe\" /FO CSV")
+				rapid_debug_search = re.search(r'rapid_d.exe', rapid_debug.decode("ISO-8859-1"))
+				if rapid_debug_search == None:
+					rapid_running = False
+			if rapid_running:
+				return	
+
+		#TODO: check if rapid is running in OSX
 
 		settings = RapidSettings().getSettings()
 		if "Host" in settings and settings["Host"] != "localhost":
 			return
 
-		rapid_running = True
+		rapid_path = sublime.active_window().active_view().settings().get("RapidPath")
+		rapid_exe = sublime.active_window().active_view().settings().get("RapidExe")
 
-		rapid = subprocess.check_output("tasklist /FI \"IMAGENAME eq rapid.exe\" /FO CSV")
-		rapid_search = re.search(r'rapid.exe', rapid.decode("ISO-8859-1"))
-		if rapid_search == None:
-			rapid_debug = subprocess.check_output("tasklist /FI \"IMAGENAME eq rapid_d.exe\" /FO CSV")
-			rapid_debug_search = re.search(r'rapid_d.exe', rapid_debug.decode("ISO-8859-1"))
-			if rapid_debug_search == None:
-				rapid_running = False
-
-		if rapid_running:
-			return
-
-		rapid_path = ""
-		rapid_exe = ""
-		if "RapidPath" in settings:
-			rapid_path = settings["RapidPath"]
-		if "RapidExe" in settings:
-			rapid_exe = settings["RapidExe"]
-
-		if rapid_path and rapid_exe:
+		if rapid_path != None and rapid_exe != None:
 			RapidOutputView.printMessage("Starting " + rapid_exe)
 			subprocess.Popen(rapid_path + "\\" + rapid_exe, cwd=rapid_path)
-			#subprocess.Popen(r'c:\Work\projects\rapid\rapid.exe', cwd=r'c:\Work\projects\rapid')
 		else:
 			RapidOutputView.printMessage("Could not start server executable!")
-			RapidOutputView.printMessage("\"RapidPath\" and/or \"RapidExe\" variables not found from project file!")
-		
-
-# DEBUGGING STUFF, REMOVE AFTER DEVELOPMENT!!!
-
-#For debugging use only, kill rapid exe instantly
-class RapidKillCommand(sublime_plugin.TextCommand):
-	def run(self, edit):
-		if os.name != "nt":
-			return
-		subprocess.call("taskkill /F /IM rapid.exe")
-		RapidOutputView.printMessage("Server disconnected")
+			if os.name == "nt":
+				RapidOutputView.printMessage("\"RapidPath\" and/or \"RapidExe\" variables not found from \"Preferences (Windows).sublime_settings\" file!")
+			elif os.name == "posix":
+				RapidOutputView.printMessage("\"RapidPath\" and/or \"RapidExe\" variables not found from \"Preferences (OSX).sublime_settings\" file!")

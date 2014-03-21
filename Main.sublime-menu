@@ -18,24 +18,53 @@
                             {
                                 "command": "open_file", "args":
                                 {
-                                    "file": "${packages}/rapid_sublime/Default (Windows).sublime-keymap"
+                                    "file": "${packages}/rapid_sublime/Preferences (Windows).sublime-settings"
                                 },
-                                "caption": "Key bindings"
+                                "caption": "Preferences - Windows"
                             },
                             {
                                 "command": "open_file", "args":
                                 {
-                                    "file": "${packages}/rapid_sublime/Default (Windows).sublime-mousemap"
+                                    "file": "${packages}/rapid_sublime/Preferences (OSX).sublime-settings"
                                 },
-                                "caption": "Mouse bindings"
+                                "caption": "Preferences - OSX "
                             },
                             {
                                 "command": "open_file", "args":
                                 {
                                     "file": "${packages}/rapid_sublime/Preferences.sublime-settings"
                                 },
-                                "caption": "Settings – Default"
-                            }
+                                "caption": "Preferences – Default"
+                            },
+                            {
+                                "command": "open_file", "args":
+                                {
+                                    "file": "${packages}/rapid_sublime/Default (Windows).sublime-keymap"
+                                },
+                                "caption": "Key bindings - Windows"
+                            },
+                            {
+                                "command": "open_file", "args":
+                                {
+                                    "file": "${packages}/rapid_sublime/Default (OSX).sublime-keymap"
+                                },
+                                "caption": "Key bindings - OSX"
+                            },
+                            {
+                                "command": "open_file", "args":
+                                {
+                                    "file": "${packages}/rapid_sublime/Default (Windows).sublime-mousemap"
+                                },
+                                "caption": "Mouse bindings (Windows)"
+                            },
+                            {
+                                "command": "open_file", "args":
+                                {
+                                    "file": "${packages}/rapid_sublime/Default (OSX).sublime-mousemap"
+                                },
+                                "caption": "Mouse bindings (OSX)"
+                            },
+
                             /*
                             {
                                 "command": "open_file", "args":

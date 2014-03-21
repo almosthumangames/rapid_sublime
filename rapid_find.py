@@ -15,10 +15,19 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 	def getExcludedFolders(self):
 		if not self.folders_fetched:
 			settings = RapidSettings().getSettings()
+			sublime_project_path = RapidSettings().getStartupProjectPath()
 			if "ExcludeFoldersInFind" in settings:
+				#true/false if folders are excluded
 				self.exclude_folders = settings["ExcludeFoldersInFind"]
 			if "ExcludedFolders" in settings:
-				self.excluded_folders = settings["ExcludedFolders"]
+				#list of excluded folders
+				excluded = settings["ExcludedFolders"]
+				for excluded_folder in excluded:
+					self.excluded_folders.append(os.path.abspath(os.path.join(sublime_project_path, excluded_folder)))
+
+			# for excluded_folder in self.excluded_folders:
+			# 	print("Excluded folder change check: " + excluded_folder)
+
 			self.folders_fetched = True
 
 	def run(self, edit):

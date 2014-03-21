@@ -42,11 +42,17 @@ class RapidCollectorThread(threading.Thread):
 	instance = None
 
 	def getExcludedFolders(self):
-		settings = RapidSettings().getSettings()		
+		settings = RapidSettings().getSettings()	
+		sublime_project_path = RapidSettings().getStartupProjectPath()	
 		if "ExcludeFoldersInFind" in settings:
 			self.exclude_folders = settings["ExcludeFoldersInFind"]
 		if "ExcludedFolders" in settings:
-			self.excluded_folders = settings["ExcludedFolders"]
+			#list of excluded folders
+			excluded = settings["ExcludedFolders"]
+			for excluded_folder in excluded:
+				self.excluded_folders.append(os.path.abspath(os.path.join(sublime_project_path, excluded_folder)))		
+		# for excluded_folder in self.excluded_folders:
+		# 	print("Methodcomplete excluded folder change check: " + excluded_folder)
 			
 	def __init__(self, folders, timeout):
 		self.folders = folders

@@ -280,18 +280,20 @@ class RapidCheckServerAndStartupProjectCommand(sublime_plugin.WindowCommand):
 class RapidConnect():
 	def __init__(self):
 	
-		# check if rapid is already running
-		if os.name == "nt":
-			rapid_running = True
-			rapid = subprocess.check_output("tasklist /FI \"IMAGENAME eq rapid.exe\" /FO CSV")
-			rapid_search = re.search(r'rapid.exe', rapid.decode("ISO-8859-1"))
-			if rapid_search == None:
-				rapid_debug = subprocess.check_output("tasklist /FI \"IMAGENAME eq rapid_d.exe\" /FO CSV")
-				rapid_debug_search = re.search(r'rapid_d.exe', rapid_debug.decode("ISO-8859-1"))
-				if rapid_debug_search == None:
-					rapid_running = False
-			if rapid_running:
-				return	
+		if os.name != "nt":
+			return
+
+		# check if rapid is already running	
+		rapid_running = True
+		rapid = subprocess.check_output("tasklist /FI \"IMAGENAME eq rapid.exe\" /FO CSV")
+		rapid_search = re.search(r'rapid.exe', rapid.decode("ISO-8859-1"))
+		if rapid_search == None:
+			rapid_debug = subprocess.check_output("tasklist /FI \"IMAGENAME eq rapid_d.exe\" /FO CSV")
+			rapid_debug_search = re.search(r'rapid_d.exe', rapid_debug.decode("ISO-8859-1"))
+			if rapid_debug_search == None:
+				rapid_running = False
+		if rapid_running:
+			return	
 
 		#TODO: check if rapid is running in OSX
 

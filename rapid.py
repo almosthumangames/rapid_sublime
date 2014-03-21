@@ -25,9 +25,9 @@ class RapidConnectionThread(threading.Thread):
 		self.running = False
 
 		try:
+			threading.Thread.__init__(self)
 			self.sock = socket.create_connection((self.host, self.port))
 			#RapidOutputView.printMessage("Connected to " + self.host + ".")
-			threading.Thread.__init__(self)
 			RapidConnectionThread.instance = self
 		except OSError as e:
 			RapidOutputView.printMessage("Failed to connect to rapid server:\n" + str(e))
@@ -304,7 +304,10 @@ class RapidConnect():
 
 		if rapid_path != None and rapid_exe != None:
 			RapidOutputView.printMessage("Starting " + rapid_exe)
-			subprocess.Popen(rapid_path + "\\" + rapid_exe, cwd=rapid_path)
+			if os.name == "nt":
+				subprocess.Popen(rapid_path + "\\" + rapid_exe, cwd=rapid_path)
+			elif os.name == "posix":
+				subprocess.Popen(rapid_path + "/" + rapid_exe, cwd=rapid_path)
 		else:
 			RapidOutputView.printMessage("Could not start server executable!")
 			if os.name == "nt":

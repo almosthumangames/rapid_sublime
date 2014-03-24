@@ -102,7 +102,6 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 			match = re.search(pattern, lower_line)
 			if match != None:
 				func = func.replace("///", "").strip()
-				print(func)
 				RapidOutputView.printMessage(func)
 
 	def findLua(self, filepath, pattern):

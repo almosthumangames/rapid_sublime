@@ -24,10 +24,8 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 				excluded = settings["ExcludedFolders"]
 				for excluded_folder in excluded:
 					self.excluded_folders.append(os.path.abspath(os.path.join(sublime_project_path, excluded_folder)))
-
 			# for excluded_folder in self.excluded_folders:
 			# 	print("Excluded folder change check: " + excluded_folder)
-
 			self.folders_fetched = True
 
 	def run(self, edit):
@@ -57,7 +55,8 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 		if "*" in pattern and "." in pattern:
 			find_class_methods = True
 		
-		pattern = pattern.lower()	
+		pattern = pattern.lower()
+
 		if find_class_methods:
 			self.findClass(pattern)
 		elif len(pattern) > 0:
@@ -96,17 +95,18 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 		#print("Whole op took: " + str(full_time2-full_time1))
 
 	def findCpp(self, filepath, pattern):
-		f = open(filepath, "r").read()
+		f = open(filepath, encoding='utf-8').read()
 		function_list = re.findall('///.*\n', f)
 		for func in function_list:
 			lower_line = func.lower()
 			match = re.search(pattern, lower_line)
 			if match != None:
 				func = func.replace("///", "").strip()
+				print(func)
 				RapidOutputView.printMessage(func)
 
 	def findLua(self, filepath, pattern):
-		f = open(filepath, "r").read()
+		f = open(filepath, encoding='utf-8').read()
 		function_list = re.findall('function.*\n', f)
 		for func in function_list:
 			lower_line = func.lower()

@@ -18,20 +18,6 @@
                             {
                                 "command": "open_file", "args":
                                 {
-                                    "file": "${packages}/rapid_sublime/Preferences (Windows).sublime-settings"
-                                },
-                                "caption": "Preferences - Windows"
-                            },
-                            {
-                                "command": "open_file", "args":
-                                {
-                                    "file": "${packages}/rapid_sublime/Preferences (OSX).sublime-settings"
-                                },
-                                "caption": "Preferences - OSX "
-                            },
-                            {
-                                "command": "open_file", "args":
-                                {
                                     "file": "${packages}/rapid_sublime/Preferences.sublime-settings"
                                 },
                                 "caption": "Preferences – Default"
@@ -64,17 +50,6 @@
                                 },
                                 "caption": "Mouse bindings (OSX)"
                             },
-
-                            /*
-                            {
-                                "command": "open_file", "args":
-                                {
-                                    "file": "${packages}/User/Rapid.sublime-settings"
-                                },
-                                "caption": "Settings – User"
-                            },
-                            { "caption": "-" }
-                            */
                         ]
                     }
                 ]

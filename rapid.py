@@ -280,28 +280,40 @@ class RapidCheckServerAndStartupProjectCommand(sublime_plugin.WindowCommand):
 class RapidConnect():
 	def __init__(self):
 	
-		if os.name != "nt":
-			return
-
-		# check if rapid is already running	
-		rapid_running = True
-		rapid = subprocess.check_output("tasklist /FI \"IMAGENAME eq rapid.exe\" /FO CSV")
-		rapid_search = re.search(r'rapid.exe', rapid.decode("ISO-8859-1"))
-		if rapid_search == None:
-			rapid_debug = subprocess.check_output("tasklist /FI \"IMAGENAME eq rapid_d.exe\" /FO CSV")
-			rapid_debug_search = re.search(r'rapid_d.exe', rapid_debug.decode("ISO-8859-1"))
-			if rapid_debug_search == None:
-				rapid_running = False
-		if rapid_running:
-			return	
-
-		#TODO: check if rapid is running in OSX
+		if os.name == "nt":
+			# check if rapid is already running	
+			rapid_running = True
+			rapid = subprocess.check_output("tasklist /FI \"IMAGENAME eq rapid.exe\" /FO CSV")
+			rapid_search = re.search(r'rapid.exe', rapid.decode("ISO-8859-1"))
+			if rapid_search == None:
+				rapid_debug = subprocess.check_output("tasklist /FI \"IMAGENAME eq rapid_d.exe\" /FO CSV")
+				rapid_debug_search = re.search(r'rapid_d.exe', rapid_debug.decode("ISO-8859-1"))
+				if rapid_debug_search == None:
+					rapid_running = False
+			if rapid_running:
+				return	
+		elif os.name == "posix":
+			data = subprocess.Popen(['ps','aux'], stdout=subprocess.PIPE).stdout.readlines() 
+			rapid_running = False
+			for line in data:
+				lineStr = line.decode("utf-8")
+				if lineStr.find("rapid") > -1:
+					rapid_running = True
+					break
+			if rapid_running:
+				return
 
 		settings = RapidSettings().getSettings()
 		if "Host" in settings and settings["Host"] != "localhost":
 			return
 
-		rapid_path = sublime.active_window().active_view().settings().get("RapidPath")
+		if os.name == "nt":
+			rapid_path = sublime.active_window().active_view().settings().get("RapidPathWin")
+		elif os.name == "posix":
+			rapid_path = sublime.active_window().active_view().settings().get("RapidPathOSX")
+		else:
+			return
+
 		rapid_exe = sublime.active_window().active_view().settings().get("RapidExe")
 
 		if rapid_path != None and rapid_exe != None:
@@ -310,9 +322,28 @@ class RapidConnect():
 				subprocess.Popen(rapid_path + "\\" + rapid_exe, cwd=rapid_path)
 			elif os.name == "posix":
 				subprocess.Popen(rapid_path + "/" + rapid_exe, cwd=rapid_path)
+				time.sleep(0.5) #debug testing
 		else:
 			RapidOutputView.printMessage("Could not start server executable!")
 			if os.name == "nt":
 				RapidOutputView.printMessage("\"RapidPath\" and/or \"RapidExe\" variables not found from \"Preferences (Windows).sublime_settings\" file!")
 			elif os.name == "posix":
 				RapidOutputView.printMessage("\"RapidPath\" and/or \"RapidExe\" variables not found from \"Preferences (OSX).sublime_settings\" file!")
+
+
+class RapidTestCommand(sublime_plugin.TextCommand):
+	def run(self, edit):
+		data = subprocess.Popen(['ps','aux'], stdout=subprocess.PIPE).stdout.readlines() 
+		#print(data)
+		rapid_running = False
+		for line in data:
+			lineStr = line.decode("utf-8")
+			if lineStr.find("rapid") > -1:
+				rapid_running = True
+				break
+		if rapid_running:
+			print("rapid is already running!")
+		else:
+			print("rapid is not running!")
+
+

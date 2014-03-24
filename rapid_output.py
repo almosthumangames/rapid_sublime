@@ -24,17 +24,18 @@ class RapidOutputView():
 					break
 
 			if RapidOutputView.output == None:
-				activeView = sublime.windows()[0].active_view()
-				groups = sublime.windows()[0].num_groups()
+				activeView = sublime.active_window().active_view()
+				groups = sublime.active_window().num_groups()
 				if groups < 2:
-					sublime.windows()[0].set_layout( {"cols": [0.0, 1.0], "rows": [0.0, 0.8, 1.0], "cells": [[0,0,1,1], [0,1,1,2]]} )
-				sublime.windows()[0].focus_group(1)
-				RapidOutputView.output = sublime.windows()[0].new_file()
+					sublime.active_window().set_layout( {"cols": [0.0, 1.0], "rows": [0.0, 0.8, 1.0], "cells": [[0,0,1,1], [0,1,1,2]]} )
+				sublime.active_window().focus_group(1)
+				RapidOutputView.output = sublime.active_window().new_file()
 				RapidOutputView.output.set_read_only(True)
 				RapidOutputView.output.set_scratch(True)
 				RapidOutputView.output.set_name(RapidOutputView.name)
-				sublime.windows()[0].set_view_index(RapidOutputView.output, 1, 0)
-				sublime.windows()[0].focus_view(activeView)
+				sublime.active_window().set_view_index(RapidOutputView.output, 1, 0)
+				sublime.active_window().focus_view(activeView)
+
 		return RapidOutputView.output
 
 	@classmethod
@@ -66,7 +67,8 @@ class RapidOutputView():
 		while len(RapidOutputView.messageQueue) > 0:
 			msg = RapidOutputView.messageQueue.pop(0)
 			view = RapidOutputView.getOutputView()	
-			view.window().run_command("rapid_output_view_insert", {"msg": msg} )
+			if view != None:
+				view.window().run_command("rapid_output_view_insert", {"msg": msg} )
 
 class RapidOutputViewInsertCommand(sublime_plugin.TextCommand):
 	def run(self, edit, msg):
@@ -88,7 +90,6 @@ class RapidOutputViewInsertCommand(sublime_plugin.TextCommand):
 
 class RapidOutputViewClearCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
-		#RapidOutputView.opening = True
 		view = RapidOutputView.getOutputView()
 		view.set_read_only(False)
 		view.erase(edit, sublime.Region(0, RapidOutputView.output.size()))
@@ -98,7 +99,7 @@ class RapidOutputViewListener(sublime_plugin.EventListener):
 	def on_close(self, view):
 		if view.name() == RapidOutputView.name:
 			RapidOutputView.output = None
-			sublime.windows()[0].set_layout( {"cols": [0.0, 1.0], "rows": [0.0, 1.0], "cells": [[0,0,1,1]] } )
+			sublime.active_window().set_layout( {"cols": [0.0, 1.0], "rows": [0.0, 1.0], "cells": [[0,0,1,1]] } )
 
 class RapidDoubleClick(sublime_plugin.WindowCommand):
 	def run(self):
@@ -125,7 +126,7 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 				file_window = None
 
 				#first check all open files in main window
-				window = sublime.windows()[0]
+				window = sublime.active_window()
 				views_in_group = window.views_in_group(0)
 				for v in views_in_group:
 					if v.file_name() != None and v.file_name().endswith(file_name):	
@@ -164,7 +165,7 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 						window.focus_view(view)
 						break;
 				if view == None:
-					sublime.windows()[0].focus_group(0)
+					sublime.active_window().focus_group(0)
 					view = file_window.open_file(path+":"+file_row, sublime.ENCODED_POSITION)
 		# else:
 		# 	system_command = args["command"] if "command" in args else None

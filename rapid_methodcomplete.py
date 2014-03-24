@@ -55,6 +55,7 @@ class RapidCollectorThread(threading.Thread):
 		# 	print("Methodcomplete excluded folder change check: " + excluded_folder)
 			
 	def __init__(self, folders, timeout):
+		threading.Thread.__init__(self)
 		self.folders = folders
 		self.timeout = timeout
 
@@ -67,7 +68,7 @@ class RapidCollectorThread(threading.Thread):
 		self.file_for_parsing = ""
 		self.is_running = True
 
-		threading.Thread.__init__(self)
+		
 		RapidCollectorThread.instance = self
 
 	#Save all method signatures from all project folders
@@ -78,7 +79,9 @@ class RapidCollectorThread(threading.Thread):
 			
 			for file_name in luafiles:
 				functions = []
-				file_lines = open(file_name, 'r')
+				print("trying to save_method_signatures: " + file_name)
+				file_lines = open(file_name, encoding='utf-8').read()
+				#file_lines = open(file_name, 'r')
 				for line in file_lines:
 					if "function" in line:
 						matches = re.search('function\s\w+[:\.](\w+)\((.*)\)', line)

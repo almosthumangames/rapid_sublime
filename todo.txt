@@ -1,6 +1,7 @@
 Rapid Sublime v.1.0:
 --------------------
 
+
 Bug report(s) & Backburner 
 --------------------------
 -> Create new (lua) function with only one indented line -> no folding marker appears

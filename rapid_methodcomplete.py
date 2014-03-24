@@ -79,7 +79,6 @@ class RapidCollectorThread(threading.Thread):
 			
 			for file_name in luafiles:
 				functions = []
-				print("trying to save_method_signatures: " + file_name)
 				file_lines = open(file_name, encoding='utf-8').read()
 				#file_lines = open(file_name, 'r')
 				for line in file_lines:

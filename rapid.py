@@ -86,7 +86,7 @@ class RapidHelpCommand(sublime_plugin.TextCommand):
 		cursor_pos = self.view.sel()[0].begin()
 		region = self.view.word(cursor_pos)
 		word = self.view.substr(region)
-		print("Sending word: " + word)
+		#print("Sending word: " + word)
 		RapidConnectionThread.checkConnection()
 		line = "\nrequire(\"doc\"); doc.find([["+ word +"]])\000"
 		RapidConnectionThread.instance.sendString(line)
@@ -318,18 +318,13 @@ class RapidConnect():
 
 		if rapid_path != None and rapid_exe != None:
 			RapidOutputView.printMessage("Starting " + rapid_exe)
-			if os.name == "nt":
-				subprocess.Popen(rapid_path + "\\" + rapid_exe, cwd=rapid_path)
-			elif os.name == "posix":
-				subprocess.Popen(rapid_path + "/" + rapid_exe, cwd=rapid_path)
-				time.sleep(0.5) #debug testing
+			full_path = os.path.abspath(os.path.join(rapid_path, rapid_exe))
+			subprocess.Popen(full_path, cwd=rapid_path)
+			if os.name == "posix":
+				time.sleep(0.5) #small delay to get server running on OSX
 		else:
 			RapidOutputView.printMessage("Could not start server executable!")
-			if os.name == "nt":
-				RapidOutputView.printMessage("\"RapidPath\" and/or \"RapidExe\" variables not found from \"Preferences (Windows).sublime_settings\" file!")
-			elif os.name == "posix":
-				RapidOutputView.printMessage("\"RapidPath\" and/or \"RapidExe\" variables not found from \"Preferences (OSX).sublime_settings\" file!")
-
+			RapidOutputView.printMessage("\"RapidPath<OS>\" and/or \"RapidExe\" variables not found from \"Preferences.sublime_settings\" file!")
 
 class RapidTestCommand(sublime_plugin.TextCommand):
 	def run(self, edit):

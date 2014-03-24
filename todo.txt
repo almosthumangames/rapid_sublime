@@ -13,6 +13,10 @@ Bug report(s) & Backburner
 
 - Debugger
 
+Done in 0.1.5
+-------------
+- OSX specific fixes 
+
 Done in 0.1.4
 -------------
 - Fixed stacktrace file jumping bug

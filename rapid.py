@@ -255,17 +255,23 @@ class RapidCheckServerAndStartupProjectCommand(sublime_plugin.WindowCommand):
 		#Send commands to server accordingly
 		RapidConnectionThread.checkConnection()
 		if startup_exists:
+			RapidOutputView.printMessage("Startup project: " + startup_path)
+			line = "\nsys.loadProject([[" + startup_path + "]])\000"
+			RapidConnectionThread.instance.sendString(line)
+
+			#old functionality below, removed 25.3.2014
+
 			#see if the startup project file is currently open and modified
-			if is_modified:
-				#file is open and modified
-				RapidConnectionThread.instance.sendString("\nsys.restart()\000")
-				line = "@" + settings.getStartupFileName() + ":1\n" + settings.getStartupFileContent() +"\000"
-				RapidConnectionThread.instance.sendString(line)
-			else:
-				RapidOutputView.printMessage("Startup project: " + startup_path)
-				#file is either not open or open but unmodified
-				line = "\nsys.loadProject([[" + startup_path + "]])\000"
-				RapidConnectionThread.instance.sendString(line)
+			# if is_modified:
+			# 	#file is open and modified
+			# 	RapidConnectionThread.instance.sendString("\nsys.restart()\000")
+			# 	line = "@" + settings.getStartupFileName() + ":1\n" + settings.getStartupFileContent() +"\000"
+			# 	RapidConnectionThread.instance.sendString(line)
+			# else:
+			# 	RapidOutputView.printMessage("Startup project: " + startup_path)
+			# 	#file is either not open or open but unmodified
+			# 	line = "\nsys.loadProject([[" + startup_path + "]])\000"
+			# 	RapidConnectionThread.instance.sendString(line)
 		else:
 			#if no startup project, run current page
 			if is_modified:

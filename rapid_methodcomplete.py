@@ -210,17 +210,17 @@ class RapidCollector(sublime_plugin.EventListener):
 	applyAutoComplete = False
 	parseAutoComplete = False
 
-	def on_post_save(self, view):
-		if RapidCollector.parseAutoComplete:
-			RapidCollectorThread.instance.parseAutoCompleteData(view)
+	# def on_post_save(self, view):
+	# 	if RapidCollector.parseAutoComplete:
+	# 		RapidCollectorThread.instance.parseAutoCompleteData(view)
 
-	def on_query_completions(self, view, prefix, locations):
-		if RapidCollector.applyAutoComplete:
-			RapidCollector.applyAutoComplete = False
-			if view.file_name() != None and '.lua' in view.file_name():
-				return RapidFunctionStorage.getAutoCompleteList(prefix)
-		completions = []
-		return (completions, sublime.INHIBIT_EXPLICIT_COMPLETIONS)
+	# def on_query_completions(self, view, prefix, locations):
+	# 	if RapidCollector.applyAutoComplete:
+	# 		RapidCollector.applyAutoComplete = False
+	# 		if view.file_name() != None and '.lua' in view.file_name():
+	# 			return RapidFunctionStorage.getAutoCompleteList(prefix)
+	# 	completions = []
+	# 	return (completions, sublime.INHIBIT_EXPLICIT_COMPLETIONS)
 	
 class RapidAutoCompleteCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
@@ -229,15 +229,16 @@ class RapidAutoCompleteCommand(sublime_plugin.TextCommand):
 
 class RapidStartCollectorCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
-		print("Collecting function definitions for autocomplete...")
+		print("huu")
+		# print("Collecting function definitions for autocomplete...")
 
-		settings = RapidSettings().getSettings()		
-		if "ParseAutoCompleteOnSave" in settings:
-			RapidCollector.parseAutoComplete = settings["ParseAutoCompleteOnSave"]
+		# settings = RapidSettings().getSettings()		
+		# if "ParseAutoCompleteOnSave" in settings:
+		# 	RapidCollector.parseAutoComplete = settings["ParseAutoCompleteOnSave"]
 		
-		folders = self.view.window().folders()
-		if RapidCollectorThread.instance != None:
-			RapidCollectorThread.instance.stop()
-			RapidCollectorThread.instance.join()
-		RapidCollectorThread.instance = RapidCollectorThread(folders, 30)
-		RapidCollectorThread.instance.start()
+		# folders = self.view.window().folders()
+		# if RapidCollectorThread.instance != None:
+		# 	RapidCollectorThread.instance.stop()
+		# 	RapidCollectorThread.instance.join()
+		# RapidCollectorThread.instance = RapidCollectorThread(folders, 30)
+		# RapidCollectorThread.instance.start()

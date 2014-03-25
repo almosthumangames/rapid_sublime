@@ -1,6 +1,7 @@
 import sublime, sublime_plugin
 import os
 import re
+import io
 
 import time
 
@@ -30,7 +31,6 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 
 	def run(self, edit):
 		self.getExcludedFolders()
-
 		cursor_pos = self.view.sel()[0].begin()
 		
 		region = self.view.word(cursor_pos)
@@ -68,12 +68,12 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 
 	def find(self, pattern):	
 		#full_time1 = time.clock()
-
 		pattern = '.*'+pattern+'.*\(.*\)'
+
+		#print("find word(s), pattern: " + pattern)
 
 		for folder in sublime.active_window().folders():		
 			for root, dirs, files in os.walk(folder):
-				
 				checkFolder = True
 				if self.exclude_folders:
 					for excluded_folder in self.excluded_folders:
@@ -90,29 +90,8 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 					elif name.endswith("lua"):
 						full_path = os.path.abspath(os.path.join(root, name))
 						self.findLua(full_path, pattern)
-
 		#full_time2 = time.clock()
 		#print("Whole op took: " + str(full_time2-full_time1))
-
-	def findCpp(self, filepath, pattern):
-		f = open(filepath, encoding='utf-8').read()
-		function_list = re.findall('///.*\n', f)
-		for func in function_list:
-			lower_line = func.lower()
-			match = re.search(pattern, lower_line)
-			if match != None:
-				func = func.replace("///", "").strip()
-				RapidOutputView.printMessage(func)
-
-	def findLua(self, filepath, pattern):
-		f = open(filepath, encoding='utf-8').read()
-		function_list = re.findall('function.*\n', f)
-		for func in function_list:
-			lower_line = func.lower()
-			match = re.search(pattern, lower_line)
-			if match != None:
-				line = func.strip()
-				RapidOutputView.printMessage(func)
 
 	############################################
 	# Find class(es) from function definitions #
@@ -120,11 +99,12 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 
 	def findClass(self, pattern):
 		#full_time1 = time.clock()
-
 		#convert wildcards to regular expression
 		pattern = pattern.replace('.', '[\.:]').replace('*', '.*')
 		search_pattern = '\s' + pattern + '\(.*\)'
 		
+		#print("find class, search pattern: " + search_pattern)
+
 		for folder in sublime.active_window().folders():
 			for root, dirs, files in os.walk(folder):
 
@@ -136,29 +116,78 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 				for name in files:
 					if name.endswith("cpp"):
 						full_path = os.path.abspath(os.path.join(root, name))
-						self.findClassCpp(full_path, search_pattern)
+						self.findCpp(full_path, search_pattern)
+						#self.findClassCpp(full_path, search_pattern)
 					elif name.endswith("lua"):
 						full_path = os.path.abspath(os.path.join(root, name))
-						self.findClassLua(full_path, search_pattern)
-
+						self.findLua(full_path, search_pattern)
+						#self.findClassLua(full_path, search_pattern)
 		#full_time2 = time.clock()
 		#print("Whole op took: " + str(full_time2-full_time1))
 
-	def findClassCpp(self, filepath, pattern):
-		f = open(filepath, "r").read()
-		function_list = re.findall('///.*\n', f)
-		for func in function_list:
-			lower_line = func.lower()
-			match = re.search(pattern, lower_line)
-			if match != None:
-				func = func.replace("///", "").strip()
-				RapidOutputView.printMessage(func)
+	#######################
+	# Actual find methods #
+	#######################
 
-	def findClassLua(self, filepath, pattern):
-		f = open(filepath, "r").read()
-		function_list = re.findall('function.*\n', f)
-		for func in function_list:
-			lower_line = func.lower()
-			match = re.search(pattern, lower_line)
-			if match != None:
-				RapidOutputView.printMessage(func)
+	def findCpp(self, filepath, pattern):
+		with open(filepath, 'rb') as f:
+			while 1:
+				bytes = f.read(1)
+				if not bytes:
+					break
+				if bytes == b'/':
+					bytes2 = f.read(2)
+					if bytes2 == b'//':
+						func = bytearray()
+						func.append(bytes[0])
+						func.append(bytes2[0])
+						func.append(bytes2[1])
+						while 1:
+							bytes3 = f.read(1)
+							if not bytes3:
+								break
+							if bytes3 == b'\r' or bytes3 == b'\n':
+								self.findPatternCpp(func, pattern)
+								break
+							func.append(bytes3[0])
+
+	def findPatternCpp(self, func, pattern):
+		line = str(func, "utf-8").strip()
+		match = re.search(pattern, line.lower())
+		if match != None:
+			line = line.replace("///", "").strip()
+			RapidOutputView.printMessage(line)
+
+	def findLua(self, filepath, pattern):
+		with open(filepath, 'rb') as f:
+			while 1:
+				bytes = f.read(1)
+				if not bytes:
+					break
+				if bytes == b'f':
+					bytes2 = f.read(7)
+					if bytes2 == b'unction':
+						func = bytearray()
+						func.append(bytes[0])
+						func.append(bytes2[0])
+						func.append(bytes2[1])
+						func.append(bytes2[2])
+						func.append(bytes2[3])
+						func.append(bytes2[4])
+						func.append(bytes2[5])
+						func.append(bytes2[6])
+						while 1:
+							bytes3 = f.read(1)
+							if not bytes3:
+								break
+							if bytes3 == b'\r' or bytes3 == b'\n':
+								self.findPatternLua(func, pattern)
+								break
+							func.append(bytes3[0])
+
+	def findPatternLua(self, func, pattern):
+		line = str(func, "utf-8").strip()
+		match = re.search(pattern, line.lower())
+		if match != None:
+			line = line.strip()
+			RapidOutputView.printMessage(line)

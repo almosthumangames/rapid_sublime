@@ -68,7 +68,6 @@ class RapidCollectorThread(threading.Thread):
 		self.file_for_parsing = ""
 		self.is_running = True
 
-		
 		RapidCollectorThread.instance = self
 
 	#Save all method signatures from all project folders
@@ -79,9 +78,8 @@ class RapidCollectorThread(threading.Thread):
 			
 			for file_name in luafiles:
 				functions = []
-				file_lines = open(file_name, encoding='utf-8').read()
-				#file_lines = open(file_name, 'r')
-				for line in file_lines:
+				function_lines = self.findLua(file_name)
+				for line in function_lines:
 					if "function" in line:
 						matches = re.search('function\s\w+[:\.](\w+)\((.*)\)', line)
 						matches2 = re.search('function\s*(\w+)\s*\((.*)\)', line)
@@ -93,20 +91,74 @@ class RapidCollectorThread(threading.Thread):
 			
 			for file_name in cppfiles:
 				functions = []
-				file_lines = open(file_name, "r").read()
-				function_list = re.findall('///.*\(.*\).*\n', file_lines)
-				for func in function_list:
-					func = func.replace("///", "").strip()
+				function_lines = self.findCpp(file_name)
+				for line in function_lines:
+					func = line.replace("///", "").strip()
 					matches = re.search('(\w+)[:\.](\w+)\((.*)\)', func)
 					if matches != None:
 						functions.append(Method(matches.group(2), matches.group(3), matches.group(1)))
 				RapidFunctionStorage.addFunctions(functions, file_name)
 
+	def findLua(self, filepath):
+		function_list = []
+		with open(filepath, 'rb') as f:
+			while 1:
+				bytes = f.read(1)
+				if not bytes:
+					break
+				if bytes == b'f':
+					bytes2 = f.read(7)
+					if bytes2 == b'unction':
+						func = bytearray()
+						func.append(bytes[0])
+						func.append(bytes2[0])
+						func.append(bytes2[1])
+						func.append(bytes2[2])
+						func.append(bytes2[3])
+						func.append(bytes2[4])
+						func.append(bytes2[5])
+						func.append(bytes2[6])
+						while 1:
+							bytes3 = f.read(1)
+							if not bytes3:
+								break
+							if bytes3 == b'\r' or bytes3 == b'\n':
+								line = str(func, "utf-8").strip()
+								function_list.append(line)
+								break
+							func.append(bytes3[0])
+		return function_list
+
+	def findCpp(self, filepath):
+		function_list = []
+		with open(filepath, 'rb') as f:
+			while 1:
+				bytes = f.read(1)
+				if not bytes:
+					break
+				if bytes == b'/':
+					bytes2 = f.read(2)
+					if bytes2 == b'//':
+						func = bytearray()
+						func.append(bytes[0])
+						func.append(bytes2[0])
+						func.append(bytes2[1])
+						while 1:
+							bytes3 = f.read(1)
+							if not bytes3:
+								break
+							if bytes3 == b'\r' or bytes3 == b'\n':
+								line = str(func, "utf-8").strip()
+								function_list.append(line)
+								break
+							func.append(bytes3[0])
+		return function_list
+
 	#Save method signatures from the given file
 	def save_method_signature(self, file_name):
 		functions = []
-		file_lines = open(file_name, 'r')
-		for line in file_lines:
+		function_lines = self.findLua(file_name)
+		for line in function_lines:
 			if "function" in line:
 				matches = re.search('function\s\w+[:\.](\w+)\((.*)\)', line)
 				matches2 = re.search('function\s*(\w+)\s*\((.*)\)', line)
@@ -155,6 +207,7 @@ class RapidCollectorThread(threading.Thread):
 		return fileList
 
 	def run(self):
+		#TODO: change this to use callback instead of polling
 		while self.is_running:
 			if self.parse_now and self.file_for_parsing:
 				self.save_method_signature(self.file_for_parsing)
@@ -210,17 +263,17 @@ class RapidCollector(sublime_plugin.EventListener):
 	applyAutoComplete = False
 	parseAutoComplete = False
 
-	# def on_post_save(self, view):
-	# 	if RapidCollector.parseAutoComplete:
-	# 		RapidCollectorThread.instance.parseAutoCompleteData(view)
+	def on_post_save(self, view):
+		if RapidCollector.parseAutoComplete:
+			RapidCollectorThread.instance.parseAutoCompleteData(view)
 
-	# def on_query_completions(self, view, prefix, locations):
-	# 	if RapidCollector.applyAutoComplete:
-	# 		RapidCollector.applyAutoComplete = False
-	# 		if view.file_name() != None and '.lua' in view.file_name():
-	# 			return RapidFunctionStorage.getAutoCompleteList(prefix)
-	# 	completions = []
-	# 	return (completions, sublime.INHIBIT_EXPLICIT_COMPLETIONS)
+	def on_query_completions(self, view, prefix, locations):
+		if RapidCollector.applyAutoComplete:
+			RapidCollector.applyAutoComplete = False
+			if view.file_name() != None and '.lua' in view.file_name():
+				return RapidFunctionStorage.getAutoCompleteList(prefix)
+		completions = []
+		return (completions, sublime.INHIBIT_EXPLICIT_COMPLETIONS)
 	
 class RapidAutoCompleteCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
@@ -229,16 +282,15 @@ class RapidAutoCompleteCommand(sublime_plugin.TextCommand):
 
 class RapidStartCollectorCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
-		print("huu")
-		# print("Collecting function definitions for autocomplete...")
+		print("Collecting function definitions for autocomplete...")
 
-		# settings = RapidSettings().getSettings()		
-		# if "ParseAutoCompleteOnSave" in settings:
-		# 	RapidCollector.parseAutoComplete = settings["ParseAutoCompleteOnSave"]
+		settings = RapidSettings().getSettings()		
+		if "ParseAutoCompleteOnSave" in settings:
+			RapidCollector.parseAutoComplete = settings["ParseAutoCompleteOnSave"]
 		
-		# folders = self.view.window().folders()
-		# if RapidCollectorThread.instance != None:
-		# 	RapidCollectorThread.instance.stop()
-		# 	RapidCollectorThread.instance.join()
-		# RapidCollectorThread.instance = RapidCollectorThread(folders, 30)
-		# RapidCollectorThread.instance.start()
+		folders = self.view.window().folders()
+		if RapidCollectorThread.instance != None:
+			RapidCollectorThread.instance.stop()
+			RapidCollectorThread.instance.join()
+		RapidCollectorThread.instance = RapidCollectorThread(folders, 30)
+		RapidCollectorThread.instance.start()

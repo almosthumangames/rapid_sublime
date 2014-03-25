@@ -255,12 +255,12 @@ class RapidCheckServerAndStartupProjectCommand(sublime_plugin.WindowCommand):
 		#Send commands to server accordingly
 		RapidConnectionThread.checkConnection()
 		if startup_exists:
+			#always load project, even if it open and modified (modifications are loaded only after saving)
 			RapidOutputView.printMessage("Startup project: " + startup_path)
 			line = "\nsys.loadProject([[" + startup_path + "]])\000"
 			RapidConnectionThread.instance.sendString(line)
 
 			#old functionality below, removed 25.3.2014
-
 			#see if the startup project file is currently open and modified
 			# if is_modified:
 			# 	#file is open and modified

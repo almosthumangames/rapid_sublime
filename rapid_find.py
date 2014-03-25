@@ -55,7 +55,7 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 		if "*" in pattern and "." in pattern:
 			find_class_methods = True
 		
-		pattern = pattern.lower()
+		pattern = pattern.lower().strip()
 
 		if find_class_methods:
 			self.findClass(pattern)
@@ -70,7 +70,7 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 		#full_time1 = time.clock()
 		pattern = '.*'+pattern+'.*\(.*\)'
 
-		#print("find word(s), pattern: " + pattern)
+		print("find word(s), pattern: " + pattern)
 
 		for folder in sublime.active_window().folders():		
 			for root, dirs, files in os.walk(folder):

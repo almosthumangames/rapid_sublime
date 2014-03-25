@@ -68,7 +68,7 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 
 	def find(self, pattern):	
 		#full_time1 = time.clock()
-		pattern = '.*'+pattern+'.*\(.*\)'
+		pattern = '.*'+pattern+'.*[\({].*[\)}]'
 
 		#print("find word(s), pattern: " + pattern)
 
@@ -101,8 +101,9 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 		#full_time1 = time.clock()
 		#convert wildcards to regular expression
 		pattern = pattern.replace('.', '[\.:]').replace('*', '.*')
-		search_pattern = '\s' + pattern + '\(.*\)'
+		search_pattern = '\s' + pattern + '[\({].*[\)}]'
 		
+		#print("find class, pattern: " + pattern)
 		#print("find class, search pattern: " + search_pattern)
 
 		for folder in sublime.active_window().folders():
@@ -116,7 +117,7 @@ class RapidFindCommand(sublime_plugin.TextCommand):
 				for name in files:
 					if name.endswith("cpp"):
 						full_path = os.path.abspath(os.path.join(root, name))
-						self.findCpp(full_path, search_pattern)
+						self.findCpp(full_path, pattern)
 						#self.findClassCpp(full_path, search_pattern)
 					elif name.endswith("lua"):
 						full_path = os.path.abspath(os.path.join(root, name))

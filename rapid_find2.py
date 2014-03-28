@@ -32,6 +32,7 @@ class RapidFind2Command(sublime_plugin.TextCommand):
 			self.folders_fetched = True
 
 	def run(self, edit):
+		self.functionFound = False
 		self.getExcludedFolders()
 		cursor_pos = self.view.sel()[0].begin()
 		

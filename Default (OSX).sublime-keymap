@@ -8,7 +8,8 @@
             { "key": "setting.is_widget", "operator": "equal", "operand": false }
         ],
     },
-    { "keys": ["f1"], "command": "rapid_find" },
+    { "keys": ["f1"], "command": "rapid_find2" },
+    { "keys": ["ctrl+f1"], "command": "rapid_find" },
     { "keys": ["ctrl+shift+f1"], "command": "rapid_help" },
     { "keys": ["ctrl+r"], "command": "rapid_resume", "context":
         [

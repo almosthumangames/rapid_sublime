@@ -4,39 +4,94 @@ import os
 import sublime_api
 
 class RapidOutputView():
+	
 	name = "Server Output View"
-	output = None
+	#output = None
 	messageQueue = []
+	outputViews = []
 
 	@classmethod
-	def getOutputView(self):
-		if RapidOutputView.output == None:
-			output_view_found = False
-			windows = sublime.windows()
-			for window in windows:
-				views = window.views()
-				for view in views:
-					if view.name() == RapidOutputView.name:
-						RapidOutputView.output = view
-						output_view_found = True
-						break
-				if output_view_found:
+	def getOutputView(self, window):
+		for view in window.views():
+			if view.name() == RapidOutputView.name:
+				return view
+		return None
+
+	@classmethod
+	def hasOutputView(self, window):
+		
+		openView = None
+		for view in sublime.active_window().views():
+			if view.name() == RapidOutputView.name:
+				openView = view
+				break
+
+		for view in RapidOutputView.outputViews:
+			if view.window() == sublime.active_window():
+				return True
+
+		if openView != None:
+			RapidOutputView.outputViews.append(openView)
+			return True	
+		return False
+
+	@classmethod
+	def getOutputViews(self):
+		if self.hasOutputView(sublime.active_window()):
+			#print("has output view, returns it")
+			return RapidOutputView.outputViews
+		else:
+			hasView = False
+			for view in sublime.active_window().views():
+				if view.name() == RapidOutputView.name:
+					hasView = True
 					break
 
-			if RapidOutputView.output == None:
+			if not hasView:
+				# no existing output views are available, create a new one
 				activeView = sublime.active_window().active_view()
 				groups = sublime.active_window().num_groups()
 				if groups < 2:
 					sublime.active_window().set_layout( {"cols": [0.0, 1.0], "rows": [0.0, 0.8, 1.0], "cells": [[0,0,1,1], [0,1,1,2]]} )
 				sublime.active_window().focus_group(1)
-				RapidOutputView.output = sublime.active_window().new_file()
-				RapidOutputView.output.set_read_only(True)
-				RapidOutputView.output.set_scratch(True)
-				RapidOutputView.output.set_name(RapidOutputView.name)
-				sublime.active_window().set_view_index(RapidOutputView.output, 1, 0)
+				outputView = sublime.active_window().new_file()
+				outputView.set_read_only(True)
+				outputView.set_scratch(True)
+				outputView.set_name(RapidOutputView.name)
+				sublime.active_window().set_view_index(outputView, 1, 0)
 				sublime.active_window().focus_view(activeView)
+				RapidOutputView.outputViews.append(outputView)
+			
+		return RapidOutputView.outputViews
+		
+	# def getOutputView(self):
+	# 	if RapidOutputView.output == None:
+	# 		output_view_found = False
+	# 		windows = sublime.windows()
+	# 		for window in windows:
+	# 			views = window.views()
+	# 			for view in views:
+	# 				if view.name() == RapidOutputView.name:
+	# 					RapidOutputView.output = view
+	# 					output_view_found = True
+	# 					break
+	# 			if output_view_found:
+	# 				break
 
-		return RapidOutputView.output
+	# 		if RapidOutputView.output == None:
+	# 			activeView = sublime.active_window().active_view()
+	# 			groups = sublime.active_window().num_groups()
+	# 			if groups < 2:
+	# 				sublime.active_window().set_layout( {"cols": [0.0, 1.0], "rows": [0.0, 0.8, 1.0], "cells": [[0,0,1,1], [0,1,1,2]]} )
+	# 			sublime.active_window().focus_group(1)
+	# 			RapidOutputView.output = sublime.active_window().new_file()
+	# 			RapidOutputView.output.set_read_only(True)
+	# 			RapidOutputView.output.set_scratch(True)
+	# 			RapidOutputView.output.set_name(RapidOutputView.name)
+	# 			sublime.active_window().set_view_index(RapidOutputView.output, 1, 0)
+	# 			sublime.active_window().focus_view(activeView)
+
+	# 	return RapidOutputView.output
 
 	@classmethod
 	def printMessage(self, msg):
@@ -46,54 +101,43 @@ class RapidOutputView():
 	@classmethod
 	def getQueueLen(self):
 		return len(RapidOutputView.messageQueue)
-
-	@classmethod
-	def isOpen(self):
-		if RapidOutputView.output == None:
-			output_view_found = False
-			windows = sublime.windows()
-			for window in windows:
-				views = window.views()
-				for view in views:
-					if view.name() == RapidOutputView.name:
-						output_view_found = True
-						break
-				if output_view_found:
-					break
-			return output_view_found
 			
 	@classmethod
 	def callback(self):
 		while len(RapidOutputView.messageQueue) > 0:
 			msg = RapidOutputView.messageQueue.pop(0)
-			view = RapidOutputView.getOutputView()	
-			if view != None:
-				view.window().run_command("rapid_output_view_insert", {"msg": msg} )
-
+			views = RapidOutputView.getOutputViews()
+			if len(views) > 0:
+				for view in views:	
+					if view != None and view.window() != None and RapidOutputView.hasOutputView(view.window()):
+						view.window().run_command("rapid_output_view_insert", {"msg": msg } )
+			
 class RapidOutputViewInsertCommand(sublime_plugin.TextCommand):
 	def run(self, edit, msg):
-		view = RapidOutputView.getOutputView()	
-		
-		if view.settings().get('syntax') != "Packages/Lua/Lua.tmLanguage":
-			view.set_syntax_file("Packages/Lua/Lua.tmLanguage")		
-		if not '\n' in msg:
-			msg = msg + '\n'
-		
-		view.set_read_only(False)
-		view.insert(edit, view.size(), msg)
-		view.set_read_only(True)
 
-		region = RapidOutputView.output.full_line(RapidOutputView.output.size())
-		RapidOutputView.output.show(region)
+		views =  RapidOutputView.getOutputViews()
+		for view in views:
+			if self.view.window() == view.window():
+				if view.settings().get('syntax') != "Packages/Lua/Lua.tmLanguage":
+					view.set_syntax_file("Packages/Lua/Lua.tmLanguage")		
+				if not '\n' in msg:
+					msg = msg + '\n'
+			
+				view.set_read_only(False)
+				view.insert(edit, view.size(), msg)
+				view.set_read_only(True)
 
-
+				region = view.full_line(view.size())
+				view.show(region)
 
 class RapidOutputViewClearCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
-		view = RapidOutputView.getOutputView()
-		view.set_read_only(False)
-		view.erase(edit, sublime.Region(0, RapidOutputView.output.size()))
-		view.set_read_only(True)
+		views = RapidOutputView.getOutputViews()
+		if len(views) > 0:
+			for view in views:
+				view.set_read_only(False)
+				view.erase(edit, sublime.Region(0, view.size()))
+				view.set_read_only(True)
 
 class RapidOutputViewListener(sublime_plugin.EventListener):
 	def on_close(self, view):
@@ -175,18 +219,14 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 
 class RapidCloseOutputViewCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
-		#print("Rapid Close Output View command")
-		if RapidOutputView.output != None:
-			self.view.window().focus_view(RapidOutputView.output)
-			self.view.window().run_command("close_file")
-		else:
-			for window in sublime.windows():
-				for view in window.views():
-					if view.name() == RapidOutputView.name:
-						self.view.window().focus_view(view)
-						self.view.window().run_command("close_file")
-						break
-						
+		print("Rapid Close Output View command")
+		window = sublime.active_window()
+		if RapidOutputView.hasOutputView(window):
+			view = RapidOutputView.getOutputView(window)
+			if view != None:
+				RapidOutputView.outputViews.remove(view)
+				self.view.window().focus_view(view)
+				self.view.window().run_command("close_file")
 
 class RapidOutputEventListener(sublime_plugin.EventListener):
 	def on_query_context(self, view, key, operator, operand, match_all):

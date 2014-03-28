@@ -5,6 +5,9 @@ import os
 from .rapid_output import RapidOutputView
 
 class RapidSettings():
+
+	#TODO: settings are parsed once per window?  
+
 	def __init__(self):
 		self.project_settings = {}
 		self.project_filename = ""
@@ -14,6 +17,24 @@ class RapidSettings():
 
 		#parse project path
 		sublime_full_project_path = sublime.active_window().project_file_name()
+		if sublime_full_project_path == None:
+			# try to find sublime project file from folders
+			folders = sublime.active_window().folders()
+			for folder in folders:
+				for root, dirs, files in os.walk(folder):		
+					for name in files:
+						if name.endswith("sublime-project"):
+							sublime_full_project_path = os.path.abspath(os.path.join(root, name))
+							break
+					if sublime_full_project_path != None:
+						break
+				if sublime_full_project_path != None:
+						break
+		if sublime_full_project_path == None:			
+			print("No Sublime Text project file (.sublime-project) found!")
+			return
+
+		#split project path and filename
 		self.sublime_project_path, sublime_project_filename = os.path.split(sublime_full_project_path)
 		
 		#parse rapid settings full path

@@ -93,6 +93,12 @@ class RapidHelpCommand(sublime_plugin.TextCommand):
 
 class RapidEvalCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
+
+		#do not evaluate python files
+		if self.view.file_name() != None and self.view.file_name().endswith("py"):
+			print("cannot evaluate python files")
+			return
+
 		RapidConnectionThread.checkConnection()
 		line_contents = self.getLines()
 		RapidConnectionThread.instance.sendString(line_contents)
@@ -246,7 +252,7 @@ class RapidCheckServerAndStartupProjectCommand(sublime_plugin.WindowCommand):
 
 		if startup_path:
 			startup_exists = True
-			new_view = self.view.window().find_open_file(startup_path)
+			new_view = sublime.active_window().find_open_file(startup_path)
 			if new_view != None and new_view.is_dirty():
 				is_modified = True
 		elif self.view.is_dirty():

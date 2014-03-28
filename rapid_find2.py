@@ -13,6 +13,7 @@ class RapidFind2Command(sublime_plugin.TextCommand):
 	folders_fetched = False
 	exclude_folders = False
 	excluded_folders = []
+	functionFound = False
 
 	def getExcludedFolders(self):
 		if not self.folders_fetched:
@@ -63,6 +64,9 @@ class RapidFind2Command(sublime_plugin.TextCommand):
 		elif len(pattern) > 0:
 			self.find(pattern)
 
+		if not self.functionFound:
+			RapidOutputView.printMessage("Find: no match for \"" + pattern +"\"")
+
 	##########################################
 	# Find word(s) from function definitions #
 	##########################################
@@ -77,6 +81,7 @@ class RapidFind2Command(sublime_plugin.TextCommand):
 			if match != None:
 				func = func.strip()
 				RapidOutputView.printMessage(func)
+				self.functionFound = True
 
 
 	############################################
@@ -96,3 +101,4 @@ class RapidFind2Command(sublime_plugin.TextCommand):
 			if match != None:
 				func = func.strip()
 				RapidOutputView.printMessage(func)
+				self.functionFound = True

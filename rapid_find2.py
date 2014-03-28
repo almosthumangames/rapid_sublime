@@ -80,7 +80,7 @@ class RapidFind2Command(sublime_plugin.TextCommand):
 		for func in functions:
 			match = re.search(pattern, func.lower())
 			if match != None:
-				func = func.strip()
+				func = func.replace("///", "").strip()
 				RapidOutputView.printMessage(func)
 				self.functionFound = True
 

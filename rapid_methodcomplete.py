@@ -84,12 +84,13 @@ class RapidCollectorThread(threading.Thread):
 				findFunctions = []
 				function_lines = self.findCpp(file_name)
 				for line in function_lines:
-					func = line.replace("///", "").strip()
+					line = line.strip()
+					func = line.replace("///", "")
 					#matches = re.search('(\w+)[:\.](\w+)\((.*)\)', func)
 					matches = re.search('(\w+)[:\.](\w+)[\({](.*)[\)}]', func)
 					if matches != None:
 						functions.append(Method(matches.group(2), matches.group(3), matches.group(1)))
-						findFunctions.append(FunctionDefinition(func))
+						findFunctions.append(FunctionDefinition(line))
 				RapidFunctionStorage.addAutoCompleteFunctions(functions, file_name)
 				RapidFunctionStorage.addFindFunctions(findFunctions, file_name)
 

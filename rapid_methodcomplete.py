@@ -165,7 +165,7 @@ class RapidCollectorThread(threading.Thread):
 					findFunctions.append(FunctionDefinition(matches.group(0)))
 				elif matches2 != None:
 					functions.append(Method(matches2.group(1), matches2.group(2), basename(file_name)))
-					findFunctions.append(FunctionDefinition(matches.group(0)))
+					findFunctions.append(FunctionDefinition(matches2.group(0)))
 		RapidFunctionStorage.addAutoCompleteFunctions(functions, file_name)
 		RapidFunctionStorage.addFindFunctions(findFunctions, file_name)
 
@@ -186,6 +186,7 @@ class RapidCollectorThread(threading.Thread):
 				if name.endswith("lua"):
 					full_path = os.path.abspath(os.path.join(root, name))
 					fileList.append(full_path)
+					RapidFunctionStorage.addLuaFile(full_path)
 		return fileList
 
 	def get_cpp_files(self, folder, *args):

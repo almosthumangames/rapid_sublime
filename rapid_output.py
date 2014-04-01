@@ -154,10 +154,10 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 			r = sel[0]
 			s = view.line(r)
 			line = view.substr(s)
-			view.run_command("expand_selection", {"to": "line"})
-
+			
 			file_name_and_row = re.search(r'[\w\.-]+.lua:\d{1,16}', line)
 			if file_name_and_row:
+				view.run_command("expand_selection", {"to": "line"})
 				test = file_name_and_row.group().split(':')
 				file_name = test[0]
 				file_row = test[1]
@@ -211,6 +211,7 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 				if view == None:
 					sublime.active_window().focus_group(0)
 					view = file_window.open_file(path+":"+file_row, sublime.ENCODED_POSITION)
+
 		# else:
 		# 	system_command = args["command"] if "command" in args else None
 		# 	if system_command:

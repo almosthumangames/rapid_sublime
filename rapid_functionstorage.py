@@ -32,9 +32,15 @@ class FunctionDefinition:
 		return self._function
 
 class RapidFunctionStorage():
+	#autocomplete (ctrl+space)
 	funcs = {}
+
+	#find (f1)
 	findFuncMap = {}
 	findFuncs = []
+
+	#static analyzation (ctrl+f10)
+	luaFiles = []
 
 	@staticmethod
 	def addAutoCompleteFunctions(functions, filename):
@@ -70,6 +76,11 @@ class RapidFunctionStorage():
 					autocomplete_list.append((method_str_to_show + '\t' + method_file_location, method_str_to_append)) 
 		return autocomplete_list	
 
+	@staticmethod
+	def addLuaFile(full_path):
+		if not full_path in RapidFunctionStorage.luaFiles:
+			RapidFunctionStorage.luaFiles.append(full_path)
+	
 	@staticmethod
 	def addFindFunctions(functions, filename):
 		RapidFunctionStorage.findFuncMap[filename] = functions

@@ -29,5 +29,7 @@
         ]
     },
     { "keys": ["alt+l"], "command": "rapid_start_collector" },
-    { "keys": ["ctrl+space"], "command": "rapid_auto_complete" }
+    { "keys": ["ctrl+space"], "command": "rapid_auto_complete" },
+    { "keys": ["f10"], "command": "rapid_lua_check" },
+    { "keys": ["ctrl+f10"], "command": "rapid_lua_check_all" }
 ] 

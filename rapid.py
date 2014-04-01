@@ -13,7 +13,7 @@ from .rapid_parse import RapidSettings
 # view.run_command('rapid_eval')
 class RapidConnectionThread(threading.Thread):
 	instance = None
-
+	
 	def __init__(self):
 		self.host = "localhost"
 		settings = RapidSettings().getSettings()
@@ -231,9 +231,11 @@ class RapidEvalCommand(sublime_plugin.TextCommand):
 			
 			line_str = self.view.substr(line)
 			line_contents = "@" + file_name + ":" + file_row_str + "\n" + line_str + "\000"
-			# print("------")
-			# print("sending contents:")
-			# print(line_contents)
+			
+			#print("------")
+			#print("sending contents:")
+			#print(line_contents)
+			
 			return line_contents
 
 

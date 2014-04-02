@@ -10,15 +10,14 @@ class RapidLuaCheck():
 
 	@staticmethod
 	def loadLuaCheck():
-		if not RapidLuaCheck.luaCheckLoaded:
-			rapid_sublime_dir = os.path.dirname(os.path.realpath(__file__))
-			luacheck_path = os.path.abspath(os.path.join(rapid_sublime_dir, "rapid_luacheck.lua"))
-			luacheck_path = luacheck_path.replace('\\', '/')
-			luafile = open(luacheck_path, 'r').read()
-			RapidConnectionThread.checkConnection()
-			line_contents = "@rapid_luacheck.lua:1\n" + luafile + "\000"
-			RapidConnectionThread.instance.sendString(line_contents)
-			RapidLuaCheck.luaCheckLoaded = True
+		rapid_sublime_dir = os.path.dirname(os.path.realpath(__file__))
+		luacheck_path = os.path.abspath(os.path.join(rapid_sublime_dir, "rapid_luacheck.lua"))
+		luacheck_path = luacheck_path.replace('\\', '/')
+		luafile = open(luacheck_path, 'r').read()
+		RapidConnectionThread.checkConnection()
+		line_contents = "@rapid_luacheck.lua:1\n" + luafile + "\000"
+		RapidConnectionThread.instance.sendString(line_contents)
+		RapidLuaCheck.luaCheckLoaded = True
 
 class RapidLuaCheckCommand(sublime_plugin.TextCommand):
 	def run(self, edit):

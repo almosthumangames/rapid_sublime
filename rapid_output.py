@@ -6,7 +6,8 @@ import sublime_api
 class RapidOutputView():
 	
 	name = "Server Output View"
-	#output = None
+	analyze_file_name = "analyze_result.lua"
+
 	messageQueue = []
 	outputViews = []
 
@@ -149,7 +150,7 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 	def run(self):
 		view = sublime.active_window().active_view()
 		#view = self.window.active_view()
-		if view.name() == RapidOutputView.name:
+		if view.name() == RapidOutputView.name or view.file_name().endswith(RapidOutputView.analyze_file_name):
 			sel = view.sel()
 			r = sel[0]
 			s = view.line(r)
@@ -162,25 +163,24 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 				file_name = test[0]
 				file_row = test[1]
 
-				#print(file_name)
-				#print(file_row)
+				#print("Double click result: " + file_name + ":" + file_row)
 
 				path_found = False
 				path = None
 				file_window = None
 
 				#first check all open files in main window
-				window = sublime.active_window()
-				views_in_group = window.views_in_group(0)
-				for v in views_in_group:
-					if v.file_name() != None and v.file_name().endswith(file_name):	
-						tp = v.text_point(int(file_row)-1, 0)
-						window.focus_view(v)
-						v.show_at_center(tp)
-						v.sel().clear()
-						v.sel().add(sublime.Region(tp, tp))
-						#view.sel().clear()
-						return
+				# window = sublime.active_window()
+				# views_in_group = window.views_in_group(0)
+				# for v in views_in_group:
+				# 	if v.file_name() != None and v.file_name().endswith(file_name):	
+				# 		tp = v.text_point(int(file_row)-1, 0)
+				# 		window.focus_view(v)
+				# 		v.sel().clear()
+				# 		v.sel().add(sublime.Region(tp, tp))
+				# 		v.show_at_center(tp)
+				# 		#view.sel().clear()
+				# 		return
 
 				# if view not found, scan all the folders
 				for window in sublime.windows():
@@ -207,11 +207,17 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 					if view != None:
 						window.open_file(path+":"+file_row, sublime.ENCODED_POSITION)
 						window.focus_view(view)
-						break;
+						break
+
 				if view == None:
 					sublime.active_window().focus_group(0)
 					view = file_window.open_file(path+":"+file_row, sublime.ENCODED_POSITION)
-
+			else:
+				print("File name and row not found from line: " + line)
+		else:
+			print("no output view or analyze_result!")
+			print("View name: " + view.name())
+			print("View filename: " + view.file_name())
 		# else:
 		# 	system_command = args["command"] if "command" in args else None
 		# 	if system_command:

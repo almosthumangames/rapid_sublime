@@ -183,10 +183,11 @@ class RapidCollectorThread(threading.Thread):
 				 	continue
 						
 			for name in files:
-				if name.endswith("lua"):
+				if name.endswith(".lua"):
 					full_path = os.path.abspath(os.path.join(root, name))
 					fileList.append(full_path)
-					RapidFunctionStorage.addLuaFile(full_path)
+					#add lua file path for static analyzer
+					RapidFunctionStorage.addLuaFile(full_path) 
 		return fileList
 
 	def get_cpp_files(self, folder, *args):
@@ -203,7 +204,7 @@ class RapidCollectorThread(threading.Thread):
 				 	continue
 						
 			for name in files:
-				if name.endswith("cpp"):
+				if name.endswith(".cpp"):
 					full_path = os.path.abspath(os.path.join(root, name))
 					fileList.append(full_path)
 		return fileList
@@ -219,7 +220,7 @@ class RapidCollectorThread(threading.Thread):
 	def parseAutoCompleteData(self, view):
 		self.file_for_parsing = view.file_name()
 		#parse only *.lua files at runtime
-		if self.file_for_parsing.endswith("lua"):
+		if self.file_for_parsing.endswith(".lua"):
 			self.parse_now = True
 
 	def stop(self):

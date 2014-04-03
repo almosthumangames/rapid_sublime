@@ -5,6 +5,7 @@ require "Set"
 function getOptions()
 	local options = {}
 	options.check_redefined = false
+	options.check_unused = false
 	local globals = dofile("Globals.lua")
 	globals = Set(globals)
 	options.globals = globals
@@ -59,6 +60,7 @@ function writeReport(report, singleFile)
 
 					if name ~= "self" then 
 						if wtype == "unused" then wtype = "unused local variable" end
+						if wtype == "global" then wtype = "use of non-standard global" end
 						local warningLine = filename..":"..line..": "..wtype..": "..name.."\n"
 						file:write(warningLine)
 						if not warningFound then warningFound = true end

@@ -6,6 +6,7 @@ import sublime_api
 class RapidOutputView():
 	
 	name = "Server Output View"
+	analyze_view_name = "Analyze Result"
 	analyze_file_name = "analyze_result.lua"
 
 	messageQueue = []
@@ -65,35 +66,6 @@ class RapidOutputView():
 			
 		return RapidOutputView.outputViews
 		
-	# def getOutputView(self):
-	# 	if RapidOutputView.output == None:
-	# 		output_view_found = False
-	# 		windows = sublime.windows()
-	# 		for window in windows:
-	# 			views = window.views()
-	# 			for view in views:
-	# 				if view.name() == RapidOutputView.name:
-	# 					RapidOutputView.output = view
-	# 					output_view_found = True
-	# 					break
-	# 			if output_view_found:
-	# 				break
-
-	# 		if RapidOutputView.output == None:
-	# 			activeView = sublime.active_window().active_view()
-	# 			groups = sublime.active_window().num_groups()
-	# 			if groups < 2:
-	# 				sublime.active_window().set_layout( {"cols": [0.0, 1.0], "rows": [0.0, 0.8, 1.0], "cells": [[0,0,1,1], [0,1,1,2]]} )
-	# 			sublime.active_window().focus_group(1)
-	# 			RapidOutputView.output = sublime.active_window().new_file()
-	# 			RapidOutputView.output.set_read_only(True)
-	# 			RapidOutputView.output.set_scratch(True)
-	# 			RapidOutputView.output.set_name(RapidOutputView.name)
-	# 			sublime.active_window().set_view_index(RapidOutputView.output, 1, 0)
-	# 			sublime.active_window().focus_view(activeView)
-
-	# 	return RapidOutputView.output
-
 	@classmethod
 	def printMessage(self, msg):
 		RapidOutputView.messageQueue.append(msg)
@@ -150,7 +122,8 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 	def run(self):
 		view = sublime.active_window().active_view()
 		#view = self.window.active_view()
-		if view.name() == RapidOutputView.name or view.file_name().endswith(RapidOutputView.analyze_file_name):
+		if view.name() == RapidOutputView.name or view.name() == RapidOutputView.analyze_view_name or \
+						  view.file_name().endswith(RapidOutputView.analyze_file_name):
 			sel = view.sel()
 			r = sel[0]
 			s = view.line(r)
@@ -169,20 +142,7 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 				path = None
 				file_window = None
 
-				#first check all open files in main window
-				# window = sublime.active_window()
-				# views_in_group = window.views_in_group(0)
-				# for v in views_in_group:
-				# 	if v.file_name() != None and v.file_name().endswith(file_name):	
-				# 		tp = v.text_point(int(file_row)-1, 0)
-				# 		window.focus_view(v)
-				# 		v.sel().clear()
-				# 		v.sel().add(sublime.Region(tp, tp))
-				# 		v.show_at_center(tp)
-				# 		#view.sel().clear()
-				# 		return
-
-				# if view not found, scan all the folders
+				# scan all the folders
 				for window in sublime.windows():
 					for folder in window.folders():			
 						for root, dirs, files in os.walk(folder):
@@ -198,8 +158,6 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 
 				if not path_found:
 					return
-
-				#view.sel().clear()
 				
 				view = None
 				for window in sublime.windows():
@@ -212,17 +170,12 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 				if view == None:
 					sublime.active_window().focus_group(0)
 					view = file_window.open_file(path+":"+file_row, sublime.ENCODED_POSITION)
-			else:
-				print("File name and row not found from line: " + line)
-		else:
-			print("no output view or analyze_result!")
-			print("View name: " + view.name())
-			print("View filename: " + view.file_name())
+		# 	else:
+		# 		print("File name and row not found from line: " + line)
 		# else:
-		# 	system_command = args["command"] if "command" in args else None
-		# 	if system_command:
-		# 		system_args = dict({"event": args["event"]}.items() + args["args"].items())
-		# 		self.view.run_command(system_command, system_args)
+		# 	print("no output view or analyze_result!")
+		# 	print("View name: " + view.name())
+		# 	print("View filename: " + view.file_name())
 
 class RapidCloseOutputViewCommand(sublime_plugin.TextCommand):
 	def run(self, edit):

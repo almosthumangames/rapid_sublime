@@ -121,9 +121,8 @@ class RapidOutputViewListener(sublime_plugin.EventListener):
 class RapidDoubleClick(sublime_plugin.WindowCommand):
 	def run(self):
 		view = sublime.active_window().active_view()
-		#view = self.window.active_view()
 		if view.name() == RapidOutputView.name or view.name() == RapidOutputView.analyze_view_name or \
-						  view.file_name().endswith(RapidOutputView.analyze_file_name):
+						  os.path.basename(view.file_name()).startswith("tmp") or view.file_name().endswith(RapidOutputView.analyze_file_name):
 			sel = view.sel()
 			r = sel[0]
 			s = view.line(r)
@@ -172,10 +171,11 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 					view = file_window.open_file(path+":"+file_row, sublime.ENCODED_POSITION)
 		# 	else:
 		# 		print("File name and row not found from line: " + line)
-		# else:
-		# 	print("no output view or analyze_result!")
-		# 	print("View name: " + view.name())
-		# 	print("View filename: " + view.file_name())
+		else:
+		 	print("no output view or analyze_result!")
+		 	print("View name: " + view.name())
+		 	print("View filename: " + view.file_name())
+		 	print(os.path.basename(view.file_name()))
 
 class RapidCloseOutputViewCommand(sublime_plugin.TextCommand):
 	def run(self, edit):

@@ -95,7 +95,10 @@ class RapidOutputViewInsertCommand(sublime_plugin.TextCommand):
 					view.set_syntax_file("Packages/Lua/Lua.tmLanguage")		
 				if not '\n' in msg:
 					msg = msg + '\n'
-			
+				if re.search("Static analysis done", msg):
+					self.view.window().run_command("rapid_luacheck_load_static_analysis")
+					return
+
 				view.set_read_only(False)
 				view.insert(edit, view.size(), msg)
 				view.set_read_only(True)
@@ -122,7 +125,7 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 	def run(self):
 		view = sublime.active_window().active_view()
 		if view.name() == RapidOutputView.name or view.name() == RapidOutputView.analyze_view_name or \
-						  os.path.basename(view.file_name()).startswith("tmp") or view.file_name().endswith(RapidOutputView.analyze_file_name):
+						  view.file_name().endswith(RapidOutputView.analyze_file_name):
 			sel = view.sel()
 			r = sel[0]
 			s = view.line(r)
@@ -171,15 +174,15 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 					view = file_window.open_file(path+":"+file_row, sublime.ENCODED_POSITION)
 		# 	else:
 		# 		print("File name and row not found from line: " + line)
-		else:
-		 	print("no output view or analyze_result!")
-		 	print("View name: " + view.name())
-		 	print("View filename: " + view.file_name())
-		 	print(os.path.basename(view.file_name()))
+		# else:
+		#  	print("no output view or analyze_result!")
+		#  	print("View name: " + view.name())
+		#  	print("View filename: " + view.file_name())
+		#  	print(os.path.basename(view.file_name()))
 
 class RapidCloseOutputViewCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
-		print("Rapid Close Output View command")
+		#print("Rapid Close Output View command")
 		window = sublime.active_window()
 		if RapidOutputView.hasOutputView(window):
 			view = RapidOutputView.getOutputView(window)

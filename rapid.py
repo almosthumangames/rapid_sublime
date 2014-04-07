@@ -311,7 +311,9 @@ class RapidConnect():
 			rapid_running = False
 			for line in data:
 				lineStr = line.decode("utf-8")
-				if lineStr.find("rapid") > -1:
+				if lineStr.find("rapid") > -1 and lineStr.find(os.getlogin()) > -1:
+					print("Rapid executable is already running for user: " + os.getlogin())
+					print(lineStr)
 					rapid_running = True
 					break
 			if rapid_running:

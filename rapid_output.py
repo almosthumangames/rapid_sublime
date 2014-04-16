@@ -88,7 +88,7 @@ class RapidOutputView():
 class RapidOutputViewInsertCommand(sublime_plugin.TextCommand):
 	def run(self, edit, msg):
 
-		views =  RapidOutputView.getOutputViews()
+		views = RapidOutputView.getOutputViews()
 		for view in views:
 			if self.view.window() == view.window():
 				if view.settings().get('syntax') != "Packages/Lua/Lua.tmLanguage":
@@ -138,13 +138,22 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 				file_name = test[0]
 				file_row = test[1]
 
-				#print("Double click result: " + file_name + ":" + file_row)
+				# print("Double click result: " + file_name + ":" + file_row)
 
 				path_found = False
 				path = None
 				file_window = None
+		
+				# check if file is already open in the window
+				open_views = sublime.active_window().views()
+				for open_view in open_views:
+					if open_view.file_name() != None and open_view.file_name().endswith(file_name):
+						path = open_view.file_name()
+						view = sublime.active_window().open_file(path+":"+file_row, sublime.ENCODED_POSITION)
+						sublime.active_window().focus_view(view)
+						return
 
-				# scan all the folders
+				# scan all the folders if view not found on window
 				for window in sublime.windows():
 					for folder in window.folders():			
 						for root, dirs, files in os.walk(folder):
@@ -157,8 +166,8 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 										path_found = True
 										file_window = window
 										break
-
 				if not path_found:
+					RapidOutputView.printMessage(file_name + " not found in the project folders!")
 					return
 				
 				view = None
@@ -172,8 +181,8 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 				if view == None:
 					sublime.active_window().focus_group(0)
 					view = file_window.open_file(path+":"+file_row, sublime.ENCODED_POSITION)
-		# 	else:
-		# 		print("File name and row not found from line: " + line)
+			# else:
+			# 	print("File name and row not found from line: " + line)
 		# else:
 		#  	print("no output view or analyze_result!")
 		#  	print("View name: " + view.name())

@@ -235,7 +235,6 @@ class RapidEvalCommand(sublime_plugin.TextCommand):
 			#print("------")
 			#print("sending contents:")
 			#print(line_contents)
-			
 			return line_contents
 
 
@@ -324,10 +323,13 @@ class RapidConnect():
 			return
 
 		if os.name == "nt":
-			rapid_path = sublime.active_window().active_view().settings().get("RapidPathWin")
+			rapid_path = settings["RapidPathWin"]
+			#sublime.active_window().active_view().settings().get("RapidPathWin")
 		elif os.name == "posix":
-			rapid_path = sublime.active_window().active_view().settings().get("RapidPathOSX")
+			rapid_path = settings["RapidPathOSX"]
+			#sublime.active_window().active_view().settings().get("RapidPathOSX")
 		else:
+			RapidOutputView.printMessage("Could not find \"RapidPath<OS>\" variable from projects' rapid_sublime -file!")
 			return
 
 		rapid_exe = sublime.active_window().active_view().settings().get("RapidExe")
@@ -356,5 +358,3 @@ class RapidTestCommand(sublime_plugin.TextCommand):
 			print("rapid is already running!")
 		else:
 			print("rapid is not running!")
-
-

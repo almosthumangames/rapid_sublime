@@ -11,9 +11,10 @@ class RapidSettings():
 	def __init__(self):
 		self.project_settings = {}
 		self.project_filename = ""
-		#self.path = ""
 		self.full_path = ""
 		self.sublime_project_path = ""
+		self.rapid_path_win = ""
+		self.rapid_path_osx = ""
 
 		#parse project path
 		sublime_full_project_path = sublime.active_window().project_file_name()

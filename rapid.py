@@ -249,7 +249,7 @@ class RapidCheckServerAndStartupProjectCommand(sublime_plugin.WindowCommand):
 
 		RapidOutputView.printMessage("Loading project settings...")
 		startup_path = RapidSettings().getStartupFilePath()
-		#RapidOutputView.printMessage("Startup path: " + startup_path)
+		RapidOutputView.printMessage("Startup path: " + startup_path)
 
 		if startup_path:
 			startup_exists = True
@@ -262,23 +262,10 @@ class RapidCheckServerAndStartupProjectCommand(sublime_plugin.WindowCommand):
 		#Send commands to server accordingly
 		RapidConnectionThread.checkConnection()
 		if startup_exists:
-			#always load project, even if it open and modified (modifications are loaded only after saving)
+			#always load project, even if it is open and modified (modifications are loaded only after saving)
 			RapidOutputView.printMessage("Startup project: " + startup_path)
 			line = "\nsys.loadProject([[" + startup_path + "]])\000"
 			RapidConnectionThread.instance.sendString(line)
-
-			#old functionality below, removed 25.3.2014
-			#see if the startup project file is currently open and modified
-			# if is_modified:
-			# 	#file is open and modified
-			# 	RapidConnectionThread.instance.sendString("\nsys.restart()\000")
-			# 	line = "@" + settings.getStartupFileName() + ":1\n" + settings.getStartupFileContent() +"\000"
-			# 	RapidConnectionThread.instance.sendString(line)
-			# else:
-			# 	RapidOutputView.printMessage("Startup project: " + startup_path)
-			# 	#file is either not open or open but unmodified
-			# 	line = "\nsys.loadProject([[" + startup_path + "]])\000"
-			# 	RapidConnectionThread.instance.sendString(line)
 		else:
 			#if no startup project, run current page
 			if is_modified:
@@ -324,10 +311,9 @@ class RapidConnect():
 
 		if os.name == "nt":
 			rapid_path = settings["RapidPathWin"]
-			#sublime.active_window().active_view().settings().get("RapidPathWin")
 		elif os.name == "posix":
-			rapid_path = settings["RapidPathOSX"]
-			#sublime.active_window().active_view().settings().get("RapidPathOSX")
+			os.chdir(RapidSettings().getStartupProjectPath()) 
+			rapid_path = os.path.realpath(settings["RapidPathOSX"])
 		else:
 			RapidOutputView.printMessage("Could not find \"RapidPath<OS>\" variable from projects' rapid_sublime -file!")
 			return

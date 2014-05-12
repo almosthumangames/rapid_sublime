@@ -280,6 +280,8 @@ class RapidCheckServerAndStartupProjectCommand(sublime_plugin.WindowCommand):
 class RapidConnect():
 	def __init__(self):
 	
+		print("rapidconnect")
+
 		if os.name == "nt":
 			# check if rapid is already running	
 			rapid_running = True
@@ -318,7 +320,8 @@ class RapidConnect():
 			RapidOutputView.printMessage("Could not find \"RapidPath<OS>\" variable from projects' rapid_sublime -file!")
 			return
 
-		rapid_exe = sublime.active_window().active_view().settings().get("RapidExe")
+		#rapid_exe = sublime.active_window().active_view().settings().get("RapidExe")
+		rapid_exe = settings["RapidExe"]
 
 		if rapid_path != None and rapid_exe != None:
 			RapidOutputView.printMessage("Starting " + rapid_exe)

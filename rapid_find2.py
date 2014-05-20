@@ -58,12 +58,12 @@ class RapidFind2Command(sublime_plugin.TextCommand):
 		if "*" in pattern and "." in pattern:
 			find_class_methods = True
 		
-		pattern = pattern.lower().strip()
+		pattern2 = pattern.lower().strip()
 
 		if find_class_methods:
-			self.findClass(pattern)
+			self.findClass(pattern2)
 		elif len(pattern) > 0:
-			self.find(pattern)
+			self.find(pattern2)
 
 		if not self.functionFound:
 			RapidOutputView.printMessage("Find: no match for \"" + pattern +"\"")

@@ -30,7 +30,7 @@ class RapidConnectionThread(threading.Thread):
 			#RapidOutputView.printMessage("Connected to " + self.host + ".")
 			RapidConnectionThread.instance = self
 		except OSError as e:
-			RapidOutputView.printMessage("Failed to connect to rapid server:\n" + str(e))
+			RapidOutputView.printMessage("Failed to connect to rapid server:\n" + str(e) + "\n")
 
 	def run(self):
 		self.running = True

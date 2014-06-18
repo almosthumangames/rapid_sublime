@@ -69,7 +69,7 @@ class RapidOutputView():
 	@classmethod
 	def printMessage(self, msg):
 		RapidOutputView.messageQueue.append(msg)
-		sublime.set_timeout(RapidOutputView.callback(), 100)
+		sublime.set_timeout(RapidOutputView.callback, 100)
 
 	@classmethod
 	def getQueueLen(self):

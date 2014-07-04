@@ -38,11 +38,13 @@ class RapidFind2Command(sublime_plugin.TextCommand):
 		
 		region = self.view.word(cursor_pos)
 		pattern = self.view.substr(region)
+		print("Pattern is: " + pattern)
 		#RapidOutputView.printMessage("Pattern is: " + pattern)
 
 		region2 = self.view.line(cursor_pos)
 		line = self.view.substr(region2)
 		words = line.split()
+		
 		#RapidOutputView.printMessage("Words are: " + str(words))
 
 		for word in words:
@@ -73,23 +75,31 @@ class RapidFind2Command(sublime_plugin.TextCommand):
 	##########################################
 
 	def find(self, pattern):	
+		if pattern.startswith("*"):
+			pattern = pattern[1:]
+
 		pattern = '.*'+pattern+'.*[\({].*[\)}]'
 		#print("find word(s), pattern: " + pattern)
 
 		functions = RapidFunctionStorage.getFindFunctions()
-		for func in functions:
-			match = re.search(pattern, func.lower())
-			if match != None:
-				func = func.replace("///", "").strip()
-				RapidOutputView.printMessage(func)
-				self.functionFound = True
-
+		if len(functions) == 0:
+			print("Error: Function definitions have been lost, alt+l collects them again")
+		else:
+			for func in functions:
+				match = re.search(pattern, func.lower())
+				if match != None:
+					func = func.replace("///", "").strip()
+					RapidOutputView.printMessage(func)
+					self.functionFound = True
 
 	############################################
 	# Find class(es) from function definitions #
 	############################################
 
 	def findClass(self, pattern):
+		if pattern.startswith("*"):
+			pattern = pattern[1:]
+
 		#convert wildcards to regular expression
 		pattern = pattern.replace('.', '[\.:]').replace('*', '.*')
 		search_pattern = pattern + '[\({].*[\)}]'		
@@ -97,9 +107,12 @@ class RapidFind2Command(sublime_plugin.TextCommand):
 		#print("find class, search pattern: " + search_pattern)
 
 		functions = RapidFunctionStorage.getFindFunctions()
-		for func in functions:
-			match = re.search(search_pattern, func.lower())
-			if match != None:
-				func = func.strip()
-				RapidOutputView.printMessage(func)
-				self.functionFound = True
+		if len(functions) == 0:
+			print("Error: Function definitions have been lost, alt+l collects them again")
+		else:
+			for func in functions:
+				match = re.search(search_pattern, func.lower())
+				if match != None:
+					func = func.strip()
+					RapidOutputView.printMessage(func)
+					self.functionFound = True

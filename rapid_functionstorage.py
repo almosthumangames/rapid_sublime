@@ -86,6 +86,7 @@ class RapidFunctionStorage():
 		RapidFunctionStorage.findFuncMap[filename] = functions
 		if RapidFunctionStorage.findFuncs:
 			# clear findFuncs list in order to parse all new funcs in getFindFunctions()
+			print("deleting findFuncs list... (should parse everything on next getFindFunctions() call")
 			del RapidFunctionStorage.findFuncs[:]
 
 	@staticmethod
@@ -98,9 +99,12 @@ class RapidFunctionStorage():
 	def getFindFunctions():
 		#parse functions again only if they have been updated, otherwise just return findFuncs list
 		if not RapidFunctionStorage.findFuncs:
-			for key in RapidFunctionStorage.findFuncMap:
-				funcs = RapidFunctionStorage.findFuncMap[key]
-				for func in funcs:
-					RapidFunctionStorage.findFuncs.append(func.getFunction())
+			if len(RapidFunctionStorage.findFuncMap) > 0:
+				for key in RapidFunctionStorage.findFuncMap:
+					funcs = RapidFunctionStorage.findFuncMap[key]
+					for func in funcs:
+						RapidFunctionStorage.findFuncs.append(func.getFunction())
+			else:
+				print("rapid_functionstorage.py: INTERNAL ERROR: findFuncMap length is 0!")
 		return RapidFunctionStorage.findFuncs
 

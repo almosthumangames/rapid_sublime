@@ -49,7 +49,7 @@ class RapidCollectorThread(threading.Thread):
 		self.getExcludedFolders()
 
 		self.save_method_signatures()
-		self.parse_now = False
+		#self.parse_now = False
 		self.file_for_parsing = ""
 		self.is_running = True
 
@@ -209,19 +209,25 @@ class RapidCollectorThread(threading.Thread):
 					fileList.append(full_path)
 		return fileList
 
-	def run(self):
-		#TODO: change this to use callback instead of polling
-		while self.is_running:
-			if self.parse_now and self.file_for_parsing:
-				self.save_method_signature(self.file_for_parsing)
-				self.parse_now = False
-			time.sleep(0.1)
+	#def run(self):
+		# #TODO: change this to use callback instead of polling
+		# while self.is_running:
+		# 	if self.parse_now and self.file_for_parsing:
+		# 		self.save_method_signature(self.file_for_parsing)
+		# 		self.parse_now = False
+		# 	time.sleep(0.1)
+
+	def callback(self):
+		#print("Rapid MethodComplete: saving method signature")
+		self.save_method_signature(self.file_for_parsing)
 
 	def parseAutoCompleteData(self, view):
 		self.file_for_parsing = view.file_name()
 		#parse only *.lua files at runtime
 		if self.file_for_parsing.endswith(".lua"):
-			self.parse_now = True
+			#print("calling methodcomplete callback")
+			sublime.set_timeout(self.callback, 100)
+			#self.parse_now = True
 
 	def stop(self):
 		self.is_running = False
@@ -260,4 +266,5 @@ class RapidStartCollectorCommand(sublime_plugin.TextCommand):
 			RapidCollectorThread.instance.stop()
 			RapidCollectorThread.instance.join()
 		RapidCollectorThread.instance = RapidCollectorThread(folders, 30)
+
 		RapidCollectorThread.instance.start()

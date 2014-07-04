@@ -125,7 +125,7 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 	def run(self):
 		view = sublime.active_window().active_view()
 		if view.name() == RapidOutputView.name or view.name() == RapidOutputView.analyze_view_name or \
-						  view.file_name().endswith(RapidOutputView.analyze_file_name):
+						  (view.file_name() != None and view.file_name().endswith(RapidOutputView.analyze_file_name)):
 			sel = view.sel()
 			r = sel[0]
 			s = view.line(r)
@@ -229,24 +229,3 @@ class RapidFileOpenListener(sublime_plugin.EventListener):
 				active_view_index = active_view_index + 1
 			window.focus_group(0)
 			window.set_view_index(view, 0, active_view_index)
-
-#DEBUG: Double-click testing
-
-# class MySpecialDoubleclickCommand(sublime_plugin.TextCommand):
-#  	def run_(self, cmd, args):
-#   		if self.view.name() == RapidOutputView.name:
-#   			print("yippee-ki-yea!")
-#   		else:
-#   			system_command = args["command"] if "command" in args else None
-#   			if system_command:
-#   				system_args = dict({"event" : args["event"].items() | args["args"].items()})
-#   				#self.view.run_command(self.view.id, system_command, system_args)
-#   				#self.view.run_command(system_command, system_args)
-#   				view_id = sublime.active_window().active_view().id()
-#   				sublime_api.view_run_command(view_id, cmd, args)
-
-# 	{
-# 		"button": "button1", "count": 2,
-# 		"press_command": "my_special_doubleclick",
-# 		"press_args": {"command": "drag_select", "args": {"by": "words"}}
-# 	}

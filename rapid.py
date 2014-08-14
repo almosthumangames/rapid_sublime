@@ -11,6 +11,7 @@ from .rapid_parse import RapidSettings
 
 # to run execute from the console:
 # view.run_command('rapid_eval')
+
 class RapidConnectionThread(threading.Thread):
 	instance = None
 	
@@ -38,7 +39,10 @@ class RapidConnectionThread(threading.Thread):
 
 		try:
 			while True:
-				data = self.sock.recv(1).decode()
+				data = self.sock.recv(1)
+				
+				data = self.decodeData(data)
+
 				if not data:
 					break;
 
@@ -60,11 +64,21 @@ class RapidConnectionThread(threading.Thread):
 		del self.sock
 		RapidOutputView.printMessage("Connection terminated")
 
+	def decodeData(self, data):
+		#avoid error if received data is non-ascii
+		try:
+			char = data.decode()
+		except UnicodeDecodeError:
+			char = ""
+		return char
+
 	def isRunning(self):
 		return self.running 
 
 	def sendString(self, msg):
-		self.sock.send(msg.encode())
+		#ignore non-ascii characters when sending
+		msg = msg.encode('ascii', 'ignore')
+		self.sock.send(msg)
 
 	@staticmethod
 	def checkConnection():
@@ -280,7 +294,7 @@ class RapidCheckServerAndStartupProjectCommand(sublime_plugin.WindowCommand):
 class RapidConnect():
 	def __init__(self):
 	
-		print("rapidconnect")
+		#print("rapidconnect")
 
 		if os.name == "nt":
 			# check if rapid is already running	

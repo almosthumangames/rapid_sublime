@@ -147,7 +147,7 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 				# check if file is already open in the window
 				open_views = sublime.active_window().views()
 				for open_view in open_views:
-					if open_view.file_name() != None and open_view.file_name().endswith(file_name):
+					if open_view.file_name() != None and open_view.file_name() == file_name:
 						path = open_view.file_name()
 						view = sublime.active_window().open_file(path+":"+file_row, sublime.ENCODED_POSITION)
 						sublime.active_window().focus_view(view)

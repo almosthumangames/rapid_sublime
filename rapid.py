@@ -39,8 +39,9 @@ class RapidConnectionThread(threading.Thread):
 
 		try:
 			while True:
-				data = self.sock.recv(1)
+				#data = self.sock.recv(1).decode()
 				
+				data = self.sock.recv(1)
 				data = self.decodeData(data)
 
 				if not data:
@@ -65,11 +66,11 @@ class RapidConnectionThread(threading.Thread):
 		RapidOutputView.printMessage("Connection terminated")
 
 	def decodeData(self, data):
-		#avoid error if received data is non-ascii
+		#avoid error if received data is non-ascii (print space instead)
 		try:
 			char = data.decode()
 		except UnicodeDecodeError:
-			char = ""
+			char = " "
 		return char
 
 	def isRunning(self):
@@ -77,8 +78,9 @@ class RapidConnectionThread(threading.Thread):
 
 	def sendString(self, msg):
 		#ignore non-ascii characters when sending
-		msg = msg.encode('ascii', 'ignore')
-		self.sock.send(msg)
+		#msg = msg.encode('ascii', 'ignore')
+		
+		self.sock.send(msg.encode())
 
 	@staticmethod
 	def checkConnection():

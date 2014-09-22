@@ -129,43 +129,91 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 			sel = view.sel()
 			r = sel[0]
 			s = view.line(r)
-			line = view.substr(s)
+			line = view.substr(s).replace('\\', '/')
 			
-			file_name_and_row = re.search(r'[\w\.-]+.lua:\d{1,16}', line)
+			#file_name_and_row = re.search(r'[\w\.-]+.lua:\d{1,16}', line) #old implementation
+			file_name_and_row = re.search(r'[^ ]+lua[^ ]+', line)
+
 			if file_name_and_row:
+				file_path_name_row = file_name_and_row.group(0)
+				if file_path_name_row.endswith(":"):
+					file_path_name_row = file_path_name_row[:-1]
+				
 				view.run_command("expand_selection", {"to": "line"})
-				test = file_name_and_row.group().split(':')
+
+				#split on the last occurence of ':' 
+				test = file_path_name_row.rsplit(':', 1)
 				file_name = test[0]
 				file_row = test[1]
 
-				# print("Double click result: " + file_name + ":" + file_row)
+				#RapidOutputView.printMessage("file_name: " + file_name)
+				#RapidOutputView.printMessage("file_row: " + file_row)
+				file_name = file_name.strip()
 
+				file_path_exists = False
+				if file_name.find('/') != -1:
+					file_path_exists = True
+					file_name = file_name.lower()
+
+				# RapidOutputView.printMessage("Double click result: " + file_path + "   " + file_name + "   " + file_row +"\n")
+			
 				path_found = False
 				path = None
 				file_window = None
 		
-				# check if file is already open in the window
-				open_views = sublime.active_window().views()
-				for open_view in open_views:
-					if open_view.file_name() != None and open_view.file_name() == file_name:
-						path = open_view.file_name()
-						view = sublime.active_window().open_file(path+":"+file_row, sublime.ENCODED_POSITION)
-						sublime.active_window().focus_view(view)
-						return
+				#check file against file path
+				if file_path_exists:
+					# check if file is already open in the window
+					open_views = sublime.active_window().views()
+					for open_view in open_views:
+						open_file_name = ""
+						if open_view.file_name() != None:
+							open_file_name = open_view.file_name().replace('\\', '/').lower()
+							#RapidOutputView.printMessage("open file: " + open_file_name)
 
-				# scan all the folders if view not found on window
-				for window in sublime.windows():
-					for folder in window.folders():			
-						for root, dirs, files in os.walk(folder):
-							if path_found:
-								break
-							for name in files:
-								if name.endswith(".lua"):
-									if name == file_name:
-										path = os.path.abspath(os.path.join(root, name))
-										path_found = True
-										file_window = window
-										break
+						if open_view.file_name() != None and open_file_name == file_name:
+							path = open_view.file_name()
+							view = sublime.active_window().open_file(path+":"+file_row, sublime.ENCODED_POSITION)
+							sublime.active_window().focus_view(view)
+							return
+
+					# scan all the folders if view not found on window
+					for window in sublime.windows():
+						for folder in window.folders():			
+							for root, dirs, files in os.walk(folder):
+								if path_found:
+									break
+								for name in files:
+									if name.endswith(".lua"):
+										path = os.path.abspath(os.path.join(root, name)).replace('\\', '/').lower()
+										if path == file_name:
+											path_found = True
+											file_window = window
+											break
+				else:
+					# check if file is already open in the window
+					open_views = sublime.active_window().views()
+					for open_view in open_views:
+						if open_view.file_name() != None and open_view.file_name().endswith(file_name):
+							path = open_view.file_name()
+							view = sublime.active_window().open_file(path+":"+file_row, sublime.ENCODED_POSITION)
+							sublime.active_window().focus_view(view)
+							return
+
+					# scan all the folders if view not found on window
+					for window in sublime.windows():
+						for folder in window.folders():			
+							for root, dirs, files in os.walk(folder):
+								if path_found:
+									break
+								for name in files:
+									if name.endswith(".lua"):
+										if name == file_name:
+											path = os.path.abspath(os.path.join(root, name))
+											path_found = True
+											file_window = window
+											break
+
 				if not path_found:
 					RapidOutputView.printMessage(file_name + " not found in the project folders!")
 					return

@@ -39,6 +39,9 @@ class RapidCollectorThread(threading.Thread):
 		self.folders = folders
 		self.timeout = timeout
 
+		self.luaFuncPattern = re.compile('\s*function\s*')
+		self.cppFuncPattern = re.compile("///\s")
+
 		self.exclude_folders = False
 		self.excluded_folders = []
 		self.getExcludedFolders()
@@ -57,20 +60,23 @@ class RapidCollectorThread(threading.Thread):
 			cppfiles = []
 			fileLists = self.get_files_in_project(folder, luafiles, cppfiles)
 
+			methodPattern = re.compile('function\s\w+[:\.](\w+)\((.*)\)')
+			funcPattern = re.compile('function\s*(\w+)\s*\((.*)\)')
+
 			for file_name in luafiles:
 				functions = []
 				findFunctions = []
 				function_lines = self.findLua(file_name)
 				for line in function_lines:
-					if "function" in line:
-						matches = re.search('function\s\w+[:\.](\w+)\((.*)\)', line)
-						matches2 = re.search('function\s*(\w+)\s*\((.*)\)', line)
-						if matches != None:
+					matches = methodPattern.match(line)
+					if matches:
+						functions.append(Method(matches.group(1), matches.group(2), basename(file_name)))
+						findFunctions.append(FunctionDefinition(matches.group(0)))
+					else:
+						matches = funcPattern.match(line)
+						if matches:
 							functions.append(Method(matches.group(1), matches.group(2), basename(file_name)))
 							findFunctions.append(FunctionDefinition(matches.group(0)))
-						elif matches2 != None:
-							functions.append(Method(matches2.group(1), matches2.group(2), basename(file_name)))
-							findFunctions.append(FunctionDefinition(matches2.group(0)))
 				RapidFunctionStorage.addAutoCompleteFunctions(functions, file_name)
 				RapidFunctionStorage.addFindFunctions(findFunctions, file_name)
 			
@@ -79,10 +85,7 @@ class RapidCollectorThread(threading.Thread):
 				findFunctions = []
 				function_lines = self.findCpp(file_name)
 				for line in function_lines:
-					line = line.strip()
-					func = line.replace("///", "")
-					#matches = re.search('(\w+)[:\.](\w+)\((.*)\)', func)
-					matches = re.search('(\w+)[:\.](\w+)[\({](.*)[\)}]', func)
+					matches = re.match('///\s*(\w+)[:\.](\w+)[\({](.*)[\)}]', line)
 					if matches != None:
 						functions.append(Method(matches.group(2), matches.group(3), matches.group(1)))
 						findFunctions.append(FunctionDefinition(line))
@@ -90,60 +93,29 @@ class RapidCollectorThread(threading.Thread):
 				RapidFunctionStorage.addFindFunctions(findFunctions, file_name)
 
 	def findLua(self, filepath):
-		# TODO: very slow -- rewrite!
 		function_list = []
-		with open(filepath, 'rb') as f:
+		with open(filepath, 'r') as f:
 			while 1:
-				bytes = f.read(1)
-				if not bytes:
+				lines = f.readlines(10000)
+				if not lines:
 					break
-				if bytes == b'f':
-					bytes2 = f.read(7)
-					if bytes2 == b'unction':
-						func = bytearray()
-						func.append(bytes[0])
-						func.append(bytes2[0])
-						func.append(bytes2[1])
-						func.append(bytes2[2])
-						func.append(bytes2[3])
-						func.append(bytes2[4])
-						func.append(bytes2[5])
-						func.append(bytes2[6])
-						while 1:
-							bytes3 = f.read(1)
-							if not bytes3:
-								break
-							if bytes3 == b'\r' or bytes3 == b'\n':
-								line = str(func, "utf-8").strip()
-								function_list.append(line)
-								break
-							func.append(bytes3[0])
+				for line in lines:
+					matches = self.luaFuncPattern.match(line)
+					if matches != None:
+						function_list.append(line.strip())
 		return function_list
 
 	def findCpp(self, filepath):
-		# TODO: very slow -- rewrite!
 		function_list = []
-		with open(filepath, 'rb') as f:
+		with open(filepath, 'r') as f:
 			while 1:
-				bytes = f.read(1)
-				if not bytes:
+				lines = f.readlines(10000)
+				if not lines:
 					break
-				if bytes == b'/':
-					bytes2 = f.read(2)
-					if bytes2 == b'//':
-						func = bytearray()
-						func.append(bytes[0])
-						func.append(bytes2[0])
-						func.append(bytes2[1])
-						while 1:
-							bytes3 = f.read(1)
-							if not bytes3:
-								break
-							if bytes3 == b'\r' or bytes3 == b'\n':
-								line = str(func, "utf-8").strip()
-								function_list.append(line)
-								break
-							func.append(bytes3[0])
+				for line in lines:
+					matches = self.cppFuncPattern.match(line)
+					if matches != None:
+						function_list.append(line.strip())
 		return function_list
 
 	#Save method signatures from the given file
@@ -151,18 +123,20 @@ class RapidCollectorThread(threading.Thread):
 		functions = []
 		findFunctions = []
 		function_lines = self.findLua(file_name)
+		methodPattern = re.compile('function\s\w+[:\.](\w+)\((.*)\)')
+		funcPattern = re.compile('function\s*(\w+)\s*\((.*)\)')
 		RapidFunctionStorage.removeAutoCompleteFunctions(file_name)
 		RapidFunctionStorage.removeFindFunctions(file_name) 
 		for line in function_lines:
-			if "function" in line:
-				matches = re.search('function\s\w+[:\.](\w+)\((.*)\)', line)
-				matches2 = re.search('function\s*(\w+)\s*\((.*)\)', line)
-				if matches != None:
+			matches = methodPattern.match(line)
+			if matches:
+				functions.append(Method(matches.group(1), matches.group(2), basename(file_name)))
+				findFunctions.append(FunctionDefinition(matches.group(0)))
+			else:
+				matches = funcPattern.match(line)
+				if matches:
 					functions.append(Method(matches.group(1), matches.group(2), basename(file_name)))
 					findFunctions.append(FunctionDefinition(matches.group(0)))
-				elif matches2 != None:
-					functions.append(Method(matches2.group(1), matches2.group(2), basename(file_name)))
-					findFunctions.append(FunctionDefinition(matches2.group(0)))
 		RapidFunctionStorage.addAutoCompleteFunctions(functions, file_name)
 		RapidFunctionStorage.addFindFunctions(findFunctions, file_name)
 

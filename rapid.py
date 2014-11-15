@@ -263,7 +263,7 @@ class RapidCheckServerAndStartupProjectCommand(sublime_plugin.WindowCommand):
 		startup_exists = False
 		is_modified = False
 
-		RapidOutputView.printMessage("Loading project settings...")
+		#RapidOutputView.printMessage("Loading project settings...")
 		startup_path = RapidSettings().getStartupFilePath()
 		RapidOutputView.printMessage("Startup path: " + startup_path)
 

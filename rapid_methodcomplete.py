@@ -32,12 +32,7 @@ class RapidCollectorThread(threading.Thread):
 		if "ExcludeFoldersInFind" in settings:
 			self.exclude_folders = settings["ExcludeFoldersInFind"]
 		if "ExcludedFolders" in settings:
-			#list of excluded folders
-			excluded = settings["ExcludedFolders"]
-			for excluded_folder in excluded:
-				self.excluded_folders.append(os.path.abspath(os.path.join(sublime_project_path, excluded_folder)))		
-		# for excluded_folder in self.excluded_folders:
-		# 	print("Methodcomplete excluded folder change check: " + excluded_folder)
+			self.excluded_folders = settings["ExcludedFolders"]
 			
 	def __init__(self, folders, timeout):
 		threading.Thread.__init__(self)
@@ -55,13 +50,13 @@ class RapidCollectorThread(threading.Thread):
 
 		RapidCollectorThread.instance = self
 
-
 	#Save all method signatures from all project folders
 	def save_method_signatures(self):
 		for folder in self.folders:
-			luafiles = self.get_lua_files(folder)
-			cppfiles = self.get_cpp_files(folder)
-			
+			luafiles = []
+			cppfiles = []
+			fileLists = self.get_files_in_project(folder, luafiles, cppfiles)
+
 			for file_name in luafiles:
 				functions = []
 				findFunctions = []
@@ -95,6 +90,7 @@ class RapidCollectorThread(threading.Thread):
 				RapidFunctionStorage.addFindFunctions(findFunctions, file_name)
 
 	def findLua(self, filepath):
+		# TODO: very slow -- rewrite!
 		function_list = []
 		with open(filepath, 'rb') as f:
 			while 1:
@@ -125,6 +121,7 @@ class RapidCollectorThread(threading.Thread):
 		return function_list
 
 	def findCpp(self, filepath):
+		# TODO: very slow -- rewrite!
 		function_list = []
 		with open(filepath, 'rb') as f:
 			while 1:
@@ -169,45 +166,26 @@ class RapidCollectorThread(threading.Thread):
 		RapidFunctionStorage.addAutoCompleteFunctions(functions, file_name)
 		RapidFunctionStorage.addFindFunctions(findFunctions, file_name)
 
-	def get_lua_files(self, folder, *args):
-		fileList = []
-		for root, dirs, files in os.walk(folder):
-			
-			checkFolder = True
+	def get_files_in_project(self, folder, luaFileList, cppFileList):
+		for root, dirs, files in os.walk(folder, True):
+
+			# prune excluded folders from search
 			if self.exclude_folders:
-				for excluded_folder in self.excluded_folders:
-					if root.lower().startswith(excluded_folder.lower()):			
-						checkFolder = False 
-						break
-				if not checkFolder:
-				 	continue
+				if self.excluded_folders:
+					for excluded_folder in self.excluded_folders:
+						if excluded_folder in dirs:
+							#print("Pruning excluded folder " + excluded_folder)
+							dirs.remove(excluded_folder)
 						
 			for name in files:
 				if name.endswith(".lua"):
 					full_path = os.path.abspath(os.path.join(root, name))
-					fileList.append(full_path)
+					luaFileList.append(full_path)
 					#add lua file path for static analyzer
 					RapidFunctionStorage.addLuaFile(full_path) 
-		return fileList
-
-	def get_cpp_files(self, folder, *args):
-		fileList = []
-		for root, dirs, files in os.walk(folder):
-			
-			checkFolder = True
-			if self.exclude_folders:
-				for excluded_folder in self.excluded_folders:
-					if root.lower().startswith(excluded_folder.lower()):			
-						checkFolder = False 
-						break
-				if not checkFolder:
-				 	continue
-						
-			for name in files:
 				if name.endswith(".cpp"):
 					full_path = os.path.abspath(os.path.join(root, name))
-					fileList.append(full_path)
-		return fileList
+					cppFileList.append(full_path)
 
 	#def run(self):
 		# #TODO: change this to use callback instead of polling
@@ -256,6 +234,7 @@ class RapidAutoCompleteCommand(sublime_plugin.TextCommand):
 class RapidStartCollectorCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		print("Collecting function definitions for autocomplete...")
+		startTime = time.time()
 
 		settings = RapidSettings().getSettings()		
 		if "ParseAutoCompleteOnSave" in settings:
@@ -268,3 +247,4 @@ class RapidStartCollectorCommand(sublime_plugin.TextCommand):
 		RapidCollectorThread.instance = RapidCollectorThread(folders, 30)
 
 		RapidCollectorThread.instance.start()
+		print("Took " + str(time.time() - startTime) + " seconds.")

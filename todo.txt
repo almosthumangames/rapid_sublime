@@ -13,6 +13,10 @@ Bug report(s) & Backburner
 
 - Debugger
 
+Done in 0.1.6
+-------------
+- optimized autocompletion database creation (about x3 faster now) [PH]
+
 Done in 0.1.5
 -------------
 - OSX specific fixes 

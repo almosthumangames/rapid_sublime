@@ -5,120 +5,81 @@ import sublime_api
 
 class RapidOutputView():
 	
-	name = "Server Output View"
+	name = "Rapid Output"
 	analyze_view_name = "Analyze Result"
 	analyze_file_name = "analyze_result.lua"
 
 	messageQueue = []
-	outputViews = []
 
 	@classmethod
-	def getOutputView(self, window):
-		for view in window.views():
-			if view.name() == RapidOutputView.name:
-				return view
-		return None
-
-	@classmethod
-	def hasOutputView(self, window):
-		
-		openView = None
-		for view in sublime.active_window().views():
-			if view.name() == RapidOutputView.name:
-				openView = view
-				break
-
-		for view in RapidOutputView.outputViews:
-			if view.window() == sublime.active_window():
-				return True
-
-		if openView != None:
-			RapidOutputView.outputViews.append(openView)
-			return True	
-		return False
-
-	@classmethod
-	def getOutputViews(self):
-		if self.hasOutputView(sublime.active_window()):
-			#print("has output view, returns it")
-			return RapidOutputView.outputViews
-		else:
-			hasView = False
-			for view in sublime.active_window().views():
+	def getOutputView(self, create):
+		for window in sublime.windows():
+			for view in window.views():
 				if view.name() == RapidOutputView.name:
-					hasView = True
-					break
+					return view
 
-			if not hasView:
-				# no existing output views are available, create a new one
-				activeView = sublime.active_window().active_view()
-				groups = sublime.active_window().num_groups()
-				if groups < 2:
-					sublime.active_window().set_layout( {"cols": [0.0, 1.0], "rows": [0.0, 0.8, 1.0], "cells": [[0,0,1,1], [0,1,1,2]]} )
-				sublime.active_window().focus_group(1)
-				outputView = sublime.active_window().new_file()
-				outputView.set_read_only(True)
-				outputView.set_scratch(True)
-				outputView.set_name(RapidOutputView.name)
-				sublime.active_window().set_view_index(outputView, 1, 0)
-				sublime.active_window().focus_view(activeView)
-				RapidOutputView.outputViews.append(outputView)
+		# create new view
+		if create:
+			window = sublime.active_window()
+			activeView = window.active_view()
+			groups = window.num_groups()
+			if groups < 2:
+				window.set_layout( {"cols": [0.0, 1.0], "rows": [0.0, 0.8, 1.0], "cells": [[0,0,1,1], [0,1,1,2]]} )
+			window.focus_group(1)
+			outputView = window.new_file()
+			outputView.set_read_only(True)
+			outputView.set_scratch(True)
+			outputView.set_name(RapidOutputView.name)
+			window.set_view_index(outputView, 1, 0)
+			window.focus_view(activeView)
+			#if outputView.settings().get('syntax') != "Packages/Lua/Lua.tmLanguage":
+			outputView.set_syntax_file("Packages/Lua/Lua.tmLanguage")		
+			return outputView
 			
-		return RapidOutputView.outputViews
+		return None
 		
 	@classmethod
 	def printMessage(self, msg):
 		RapidOutputView.messageQueue.append(msg)
-		sublime.set_timeout(RapidOutputView.callback, 100)
-
-	@classmethod
-	def getQueueLen(self):
-		return len(RapidOutputView.messageQueue)
+		if len(RapidOutputView.messageQueue) == 1:
+			sublime.set_timeout(RapidOutputView.callback, 100)
 			
 	@classmethod
 	def callback(self):
+		view = RapidOutputView.getOutputView(True)
 		while len(RapidOutputView.messageQueue) > 0:
 			msg = RapidOutputView.messageQueue.pop(0)
-			views = RapidOutputView.getOutputViews()
-			if len(views) > 0:
-				for view in views:	
-					if view != None and view.window() != None and RapidOutputView.hasOutputView(view.window()):
-						view.window().run_command("rapid_output_view_insert", {"msg": msg } )
+			view.run_command("rapid_output_view_insert", {"msg": msg } )
 			
 class RapidOutputViewInsertCommand(sublime_plugin.TextCommand):
 	def run(self, edit, msg):
+		view = self.view
 
-		views = RapidOutputView.getOutputViews()
-		for view in views:
-			if self.view.window() == view.window():
-				if view.settings().get('syntax') != "Packages/Lua/Lua.tmLanguage":
-					view.set_syntax_file("Packages/Lua/Lua.tmLanguage")		
-				if not '\n' in msg:
-					msg = msg + '\n'
-				if re.search("Static analysis done", msg):
-					self.view.window().run_command("rapid_luacheck_load_static_analysis")
-					return
+		if not '\n' in msg:
+			msg = msg + '\n'
+		
+		#if re.search("Static analysis done", msg):
+		#	self.view.window().run_command("rapid_luacheck_load_static_analysis")
+		#	return
 
-				view.set_read_only(False)
-				view.insert(edit, view.size(), msg)
-				view.set_read_only(True)
+		view.set_read_only(False)
+		view.insert(edit, view.size(), msg)
+		view.set_read_only(True)
 
-				region = view.full_line(view.size())
-				view.show(region)
+		region = view.full_line(view.size())
+		view.show(region)
 
 class RapidOutputViewClearCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
-		views = RapidOutputView.getOutputViews()
-		if len(views) > 0:
-			for view in views:
-				view.set_read_only(False)
-				view.erase(edit, sublime.Region(0, view.size()))
-				view.set_read_only(True)
+		view = RapidOutputView.getOutputView(True)
+		if view != None:
+			view.set_read_only(False)
+			view.erase(edit, sublime.Region(0, view.size()))
+			view.set_read_only(True)
 
 class RapidOutputViewListener(sublime_plugin.EventListener):
 	def on_close(self, view):
 		if view.name() == RapidOutputView.name:
-			RapidOutputView.output = None
 			sublime.active_window().set_layout( {"cols": [0.0, 1.0], "rows": [0.0, 1.0], "cells": [[0,0,1,1]] } )
 
 class RapidDoubleClick(sublime_plugin.WindowCommand):
@@ -240,13 +201,10 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 class RapidCloseOutputViewCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		#print("Rapid Close Output View command")
-		window = sublime.active_window()
-		if RapidOutputView.hasOutputView(window):
-			view = RapidOutputView.getOutputView(window)
-			if view != None:
-				RapidOutputView.outputViews.remove(view)
-				self.view.window().focus_view(view)
-				self.view.window().run_command("close_file")
+		view = RapidOutputView.getOutputView(False)
+		if view != None:
+			self.view.window().focus_view(view)
+			self.view.window().run_command("close_file")
 
 class RapidOutputEventListener(sublime_plugin.EventListener):
 	def on_query_context(self, view, key, operator, operand, match_all):

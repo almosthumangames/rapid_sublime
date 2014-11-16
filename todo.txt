@@ -15,7 +15,8 @@ Bug report(s) & Backburner
 
 Done in 0.1.6
 -------------
-- optimized autocompletion database creation (about x3 faster now) [PH]
+- Optimized autocompletion database creation (about x3 faster now) [PH]
+- Refactored rapid output view code [PH]
 
 Done in 0.1.5
 -------------

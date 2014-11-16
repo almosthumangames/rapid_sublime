@@ -8,6 +8,7 @@ import re
 
 from .rapid_output import RapidOutputView
 from .rapid_parse import RapidSettings
+from .rapid_debug import *
 
 # to run execute from the console:
 # view.run_command('rapid_eval')
@@ -51,9 +52,9 @@ class RapidConnectionThread(threading.Thread):
 					dataQueue.append(data)
 
 				if data == '\n' or data == '\000':
-					datastr = "".join(dataQueue)
 					if dataQueue: #dataQueue is not empty
-						RapidOutputView.printMessage(datastr)
+						datastr = "".join(dataQueue)
+						self.receiveString(datastr)
 					del dataQueue[:]
 		except socket.error:
 			RapidOutputView.printMessage("Socket error")
@@ -75,6 +76,16 @@ class RapidConnectionThread(threading.Thread):
 
 	def isRunning(self):
 		return self.running 
+
+	def receiveString(self, msg):
+		# called when a string is received from the app
+		#print("received: " + msg)
+
+		# process debug commands
+		if msg.startswith("#"):
+			RapidDebug.execDebugCommand(msg)
+
+		RapidOutputView.printMessage(msg)
 
 	def sendString(self, msg):
 		#ignore non-ascii characters when sending

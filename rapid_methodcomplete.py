@@ -94,28 +94,22 @@ class RapidCollectorThread(threading.Thread):
 
 	def findLua(self, filepath):
 		function_list = []
-		with open(filepath, 'r') as f:
-			while 1:
-				lines = f.readlines(10000)
-				if not lines:
-					break
-				for line in lines:
-					matches = self.luaFuncPattern.match(line)
-					if matches != None:
-						function_list.append(line.strip())
+		#print(filepath)
+		with open(filepath, 'r', encoding="ascii", errors="surrogateescape") as f:
+			for line in f:
+				matches = self.luaFuncPattern.match(line)
+				if matches != None:
+					function_list.append(line.strip())
 		return function_list
 
 	def findCpp(self, filepath):
 		function_list = []
-		with open(filepath, 'r') as f:
-			while 1:
-				lines = f.readlines(10000)
-				if not lines:
-					break
-				for line in lines:
-					matches = self.cppFuncPattern.match(line)
-					if matches != None:
-						function_list.append(line.strip())
+		#print(filepath)
+		with open(filepath, 'r', encoding="ascii", errors="surrogateescape") as f:
+			for line in f:
+				matches = self.cppFuncPattern.match(line)
+				if matches != None:
+					function_list.append(line.strip())
 		return function_list
 
 	#Save method signatures from the given file

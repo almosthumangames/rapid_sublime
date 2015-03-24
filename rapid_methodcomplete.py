@@ -85,10 +85,17 @@ class RapidCollectorThread(threading.Thread):
 				findFunctions = []
 				function_lines = self.findCpp(file_name)
 				for line in function_lines:
+					# match functions without return values, e.g. "/// Foo.bar(x, y)"
 					matches = re.match('///\s*(\w+)[:\.](\w+)[\({](.*)[\)}]', line)
 					if matches != None:
 						functions.append(Method(matches.group(2), matches.group(3), matches.group(1)))
 						findFunctions.append(FunctionDefinition(line))
+					else:
+						# match functions with return values, e.g. "/// baz = Foo.bar(x, y)"
+						matches = re.match('///\s*\w+\s*=\s*(\w+)[:\.](\w+)[\({](.*)[\)}]', line)
+						if matches != None:
+							functions.append(Method(matches.group(2), matches.group(3), matches.group(1)))
+							findFunctions.append(FunctionDefinition(line))
 				RapidFunctionStorage.addAutoCompleteFunctions(functions, file_name)
 				RapidFunctionStorage.addFindFunctions(findFunctions, file_name)
 

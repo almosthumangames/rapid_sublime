@@ -309,14 +309,18 @@ class RapidConnect():
 	
 		#print("rapidconnect")
 
+		#rapid_exe = sublime.active_window().active_view().settings().get("RapidExe")
+		settings = RapidSettings().getSettings()
+		rapid_exe = settings["RapidExe"]
+
 		if os.name == "nt":
 			# check if rapid is already running	
 			rapid_running = True
-			rapid = subprocess.check_output("tasklist /FI \"IMAGENAME eq rapid.exe\" /FO CSV")
-			rapid_search = re.search(r'rapid.exe', rapid.decode("ISO-8859-1"))
+			rapid = subprocess.check_output("tasklist /FI \"IMAGENAME eq " + rapid_exe + ".exe\" /FO CSV")
+			rapid_search = re.search(rapid_exe + ".exe", rapid.decode("ISO-8859-1"))
 			if rapid_search == None:
-				rapid_debug = subprocess.check_output("tasklist /FI \"IMAGENAME eq rapid_d.exe\" /FO CSV")
-				rapid_debug_search = re.search(r'rapid_d.exe', rapid_debug.decode("ISO-8859-1"))
+				rapid_debug = subprocess.check_output("tasklist /FI \"IMAGENAME eq " + rapid_exe + "_d.exe\" /FO CSV")
+				rapid_debug_search = re.search(rapid_exe + "_d.exe", rapid_debug.decode("ISO-8859-1"))
 				if rapid_debug_search == None:
 					rapid_running = False
 			if rapid_running:
@@ -326,7 +330,7 @@ class RapidConnect():
 			rapid_running = False
 			for line in data:
 				lineStr = line.decode("utf-8")
-				if lineStr.find("rapid") > -1 and lineStr.find(os.getlogin()) > -1:
+				if lineStr.find(rapid_exe) > -1 and lineStr.find(os.getlogin()) > -1:
 					print("Rapid executable is already running for user: " + os.getlogin())
 					print(lineStr)
 					rapid_running = True
@@ -334,7 +338,6 @@ class RapidConnect():
 			if rapid_running:
 				return
 
-		settings = RapidSettings().getSettings()
 		if "Host" in settings and settings["Host"] != "localhost":
 			return
 
@@ -346,9 +349,6 @@ class RapidConnect():
 		else:
 			RapidOutputView.printMessage("Could not find \"RapidPath<OS>\" variable from projects' rapid_sublime -file!")
 			return
-
-		#rapid_exe = sublime.active_window().active_view().settings().get("RapidExe")
-		rapid_exe = settings["RapidExe"]
 
 		if rapid_path != None and rapid_exe != None:
 			RapidOutputView.printMessage("Starting " + rapid_exe)

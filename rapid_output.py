@@ -95,6 +95,10 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 			#file_name_and_row = re.search(r'[\w\.-]+.lua:\d{1,16}', line) #old implementation
 			file_name_and_row = re.search(r'[^ ]+lua[^ ]+', line)
 
+			# try to find hlsl file
+			if file_name_and_row == None:
+				file_name_and_row = re.search(r'[^ ]+hlsl[^ ]+', line)
+
 			if file_name_and_row:
 				file_path_name_row = file_name_and_row.group(0)
 				if file_path_name_row.endswith(":"):
@@ -145,12 +149,11 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 								if path_found:
 									break
 								for name in files:
-									if name.endswith(".lua"):
-										path = os.path.abspath(os.path.join(root, name)).replace('\\', '/').lower()
-										if path == file_name:
-											path_found = True
-											file_window = window
-											break
+									path = os.path.abspath(os.path.join(root, name)).replace('\\', '/').lower()
+									if path == file_name:
+										path_found = True
+										file_window = window
+										break
 				else:
 					# check if file is already open in the window
 					open_views = sublime.active_window().views()
@@ -168,12 +171,11 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 								if path_found:
 									break
 								for name in files:
-									if name.endswith(".lua"):
-										if name == file_name:
-											path = os.path.abspath(os.path.join(root, name))
-											path_found = True
-											file_window = window
-											break
+									if name == file_name:
+										path = os.path.abspath(os.path.join(root, name))
+										path_found = True
+										file_window = window
+										break
 
 				if not path_found:
 					RapidOutputView.printMessage(file_name + " not found in the project folders!")

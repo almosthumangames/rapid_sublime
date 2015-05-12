@@ -91,8 +91,8 @@ class RapidCollectorThread(threading.Thread):
 						functions.append(Method(matches.group(1), matches.group(2), ""))
 						findFunctions.append(FunctionDefinition(line))
 					else:
-						# match global functions with return values, e.g. "/// baz = foobar(x, y)"
-						matches = re.match('///\s*\w+\s*=\s*(\w+)[\({](.*)[\)}]', line)
+						# match global functions with return values, e.g. "/// baz,boz = foobar(x, y)"
+						matches = re.match('///\s*[,\w]+\s*=\s*(\w+)[\({](.*)[\)}]', line)
 						if matches != None:
 							functions.append(Method(matches.group(1), matches.group(2), ""))
 							findFunctions.append(FunctionDefinition(line))
@@ -103,8 +103,8 @@ class RapidCollectorThread(threading.Thread):
 								functions.append(Method(matches.group(2), matches.group(3), matches.group(1)))
 								findFunctions.append(FunctionDefinition(line))
 							else:
-								# match functions with return values, e.g. "/// baz = Foo.bar(x, y)"
-								matches = re.match('///\s*\w+\s*=\s*(\w+)[:\.](\w+)[\({](.*)[\)}]', line)
+								# match functions with return values, e.g. "/// baz,boz = Foo.bar(x, y)"
+								matches = re.match('///\s*[,\w]+\s*=\s*(\w+)[:\.](\w+)[\({](.*)[\)}]', line)
 								if matches != None:
 									functions.append(Method(matches.group(2), matches.group(3), matches.group(1)))
 									findFunctions.append(FunctionDefinition(line))

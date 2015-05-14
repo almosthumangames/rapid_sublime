@@ -169,38 +169,6 @@
 			<key>name</key>
 			<string>comment.block.lua</string>
 		</dict>
-
-		<!-- PH: attempt at highlighting function calls. Copied and modified from C++.tmLanguage. I have no idea how this really works... -->
-		<dict>
-			<key>captures</key>
-			<dict>
-				<key>1</key>
-				<dict>
-					<key>name</key>
-					<string>punctuation.whitespace.function-call.leading.lua</string>
-				</dict>
-				<key>2</key>
-				<dict>
-					<key>name</key>
-					<string>entity.name.function.lua</string>
-				</dict>
-				<key>3</key>
-				<dict>
-					<key>name</key>
-					<string>punctuation.definition.parameters.lua</string>
-				</dict>
-			</dict>
-			<key>match</key>
-			<string>(?x) (?: (?= \s )  (?:(?&lt;=else|return) | (?&lt;!\w)) (\s+))?
-	(\b
-		(?!(while|for|do|if|else|return)\s*\()(?:(?!NS)[A-Za-z_][A-Za-z0-9_]*+\b | [\.:] )++  # actual name
-	)
-	 \s*(\()</string>
-			<key>name</key>
-			<string>meta.function-call.lua</string>
-		</dict>
-		<!-- PH: end of function call highlighting -->
-
 		<dict>
 			<key>captures</key>
 			<dict>
@@ -245,6 +213,38 @@
 			<key>name</key>
 			<string>support.function.library.lua</string>
 		</dict>
+
+		<!-- PH: attempt at highlighting function calls. Copied and modified from C++.tmLanguage. I have no idea how this really works... -->
+		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.whitespace.function-call.leading.lua</string>
+				</dict>
+				<key>2</key>
+				<dict>
+					<key>name</key>
+					<string>entity.name.function.lua</string>
+				</dict>
+				<key>3</key>
+				<dict>
+					<key>name</key>
+					<string>punctuation.definition.parameters.lua</string>
+				</dict>
+			</dict>
+			<key>match</key>
+			<string>(?x) (?: (?= \s )  (?:(?&lt;=else|return|self) | (?&lt;!\w)) (\s+))?
+	(\b
+		(?!(while|self|for|do|if|else|return)\s*\()(?:(?!NS)[A-Za-z_][A-Za-z0-9_]*+\b)  # actual name
+	)
+	 \s*(\()</string>
+			<key>name</key>
+			<string>meta.function-call.lua</string>
+		</dict>
+		<!-- PH: end of function call highlighting -->
+
 		<dict>
 			<key>match</key>
 			<string>\b(and|or|not)\b</string>

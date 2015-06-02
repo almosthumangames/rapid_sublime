@@ -226,7 +226,8 @@
 				<key>2</key>
 				<dict>
 					<key>name</key>
-					<string>entity.name.function.lua</string>
+					<!-- <string>entity.name.function.lua</string> -->
+					<string>support.function.lua</string>
 				</dict>
 				<key>3</key>
 				<dict>

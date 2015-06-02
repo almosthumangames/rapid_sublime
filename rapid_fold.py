@@ -18,7 +18,8 @@ def fold_region_from_indent(view, r, include_next_line):
 
 class RapidFoldAllCommand(sublime_plugin.TextCommand):
 	def run(self, edit, add_empty_lines):
-		if sublime.active_window().active_view().settings().get('syntax') != "Packages/Lua/Lua.tmLanguage":
+		syntax = sublime.active_window().active_view().settings().get('syntax')
+		if syntax != "Packages/Lua/Lua.tmLanguage" and syntax != "Packages/rapid_sublime/Lua (Rapid).tmLanguage":
 			sublime.active_window().active_view().run_command("fold_by_level", {"level": 1} )
 		else:
 			folds = []
@@ -70,7 +71,8 @@ class RapidFoldAllCommand(sublime_plugin.TextCommand):
 
 class RapidUnfoldAllCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
-		if sublime.active_window().active_view().settings().get('syntax') != "Packages/Lua/Lua.tmLanguage":
+		syntax = sublime.active_window().active_view().settings().get('syntax')
+		if syntax != "Packages/Lua/Lua.tmLanguage" and syntax != "Packages/rapid_sublime/Lua (Rapid).tmLanguage":
 			sublime.active_window().active_view().run_command("unfold_all")
 		else:
 			self.view.unfold(sublime.Region(0, self.view.size()))
@@ -78,7 +80,8 @@ class RapidUnfoldAllCommand(sublime_plugin.TextCommand):
 
 class RapidFoldUnfoldCommand(sublime_plugin.TextCommand):
 	def run(self, edit, add_empty_lines):
-		if sublime.active_window().active_view().settings().get('syntax') != "Packages/Lua/Lua.tmLanguage":
+		syntax = sublime.active_window().active_view().settings().get('syntax')
+		if syntax != "Packages/Lua/Lua.tmLanguage" and syntax != "Packages/rapid_sublime/Lua (Rapid).tmLanguage":
 			self.foldUnfoldNonLuaCode(edit)
 		else:
 			cursor_position = self.view.sel()[0].begin()

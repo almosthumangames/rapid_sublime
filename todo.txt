@@ -1,17 +1,26 @@
-Rapid Sublime v.1.0:
---------------------
+Rapid Sublime Plugin for Sublime Text 3
 
 
-Bug report(s) & Backburner 
---------------------------
--> Create new (lua) function with only one indented line -> no folding marker appears
--> Create new (lua) function with two or more indeted lines -> folding marker appears, but cursor is thrown in the beginning of the document
-[These seem to be limitations in ST3, not easy (or even possible?) to fix by plugin code]
+Bugs
+----
 
-- Mouse folding to work like alt+f 
-[Not possible at the moment, this is a ST3 limitation]
+- pressing f1 on this line crashes:
+	static int shb_create_engine_systems(lua_State* L)
+
+- Create new (lua) function with only one indented line -> no folding marker appears
+
+- Create new (lua) function with two or more indeted lines -> folding marker appears, but cursor is thrown in the beginning of the document
+	- These seem to be limitations in ST3, not easy (or even possible?) to fix by plugin code?
+
+- Mouse folding does not work like alt+f 
+	- Not possible at the moment, this is a ST3 limitation?
+
+TODO
+----
 
 - Debugger
+
+
 
 Done in 0.1.6
 -------------

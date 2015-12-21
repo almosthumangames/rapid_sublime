@@ -83,33 +83,53 @@ class RapidCollectorThread(threading.Thread):
 			for file_name in cppfiles:
 				functions = []
 				findFunctions = []
-				function_lines = self.findCpp(file_name)
-				for line in function_lines:
-					# match global functions without return values, e.g. "/// foobar(x, y)"
-					matches = re.match('///\s*(\w+)[\({](.*)[\)}]', line)
-					if matches != None:
-						functions.append(Method(matches.group(1), matches.group(2), ""))
-						findFunctions.append(FunctionDefinition(line))
-					else:
-						# match global functions with return values, e.g. "/// baz,boz = foobar(x, y)"
-						matches = re.match('///\s*[,\w]+\s*=\s*(\w+)[\({](.*)[\)}]', line)
+
+				with open(file_name, 'r', encoding="ascii", errors="surrogateescape") as f:
+					#print(file_name)
+					for line in f:
+						matches = self.cppFuncPattern.match(line)
 						if matches != None:
-							functions.append(Method(matches.group(1), matches.group(2), ""))
-							findFunctions.append(FunctionDefinition(line))
-						else:
-							# match functions without return values, e.g. "/// Foo.bar(x, y)"
-							matches = re.match('///\s*(\w+)[:\.](\w+)[\({](.*)[\)}]', line)
+							line = line.strip()
+							name = None
+							signature = None
+
+							# match global functions without return values, e.g. "/// foobar(x, y)"
+							matches = re.match('///\s*(\w+)[\({](.*)[\)}]', line)
 							if matches != None:
-								functions.append(Method(matches.group(2), matches.group(3), matches.group(1)))
-								findFunctions.append(FunctionDefinition(line))
+								name = matches.group(1)
+								signature = matches.group(2)
 							else:
-								# match functions with return values, e.g. "/// baz,boz = Foo.bar(x, y)"
-								matches = re.match('///\s*[,\w]+\s*=\s*(\w+)[:\.](\w+)[\({](.*)[\)}]', line)
+								# match global functions with return values, e.g. "/// baz,boz = foobar(x, y)"
+								matches = re.match('///\s*[,\w]+\s*=\s*(\w+)[\({](.*)[\)}]', line)
 								if matches != None:
-									functions.append(Method(matches.group(2), matches.group(3), matches.group(1)))
-									findFunctions.append(FunctionDefinition(line))
-				RapidFunctionStorage.addAutoCompleteFunctions(functions, file_name)
-				RapidFunctionStorage.addFindFunctions(findFunctions, file_name)
+									name = matches.group(1)
+									signature = matches.group(2)
+								else:
+									# match functions without return values, e.g. "/// Foo.bar(x, y)"
+									matches = re.match('///\s*\w+[:\.](\w+)[\({](.*)[\)}]', line)
+									if matches != None:
+										name = matches.group(1)
+										signature = matches.group(2)
+									else:
+										# match functions with return values, e.g. "/// baz,boz = Foo.bar(x, y)"
+										matches = re.match('///\s*[,\w]+\s*=\s*\w+[:\.](\w+)[\({](.*)[\)}]', line)
+										if matches != None:
+											name = matches.group(1)
+											signature = matches.group(2)
+										elif len(findFunctions) > 0:
+											# match description, e.g. "/// blabla"
+											matches = re.match('///\s*(.*)', line)
+											if matches:
+												description = matches.group(1)
+												#print("DESC: " + description)
+												findFunctions[-1].addDescription(description)
+
+							if name and signature:
+								functions.append(Method(name, signature, ""))
+								findFunctions.append(FunctionDefinition(line))
+
+						RapidFunctionStorage.addAutoCompleteFunctions(functions, file_name)
+						RapidFunctionStorage.addFindFunctions(findFunctions, file_name)
 
 	def findLua(self, filepath):
 		function_list = []
@@ -117,16 +137,6 @@ class RapidCollectorThread(threading.Thread):
 		with open(filepath, 'r', encoding="ascii", errors="surrogateescape") as f:
 			for line in f:
 				matches = self.luaFuncPattern.match(line)
-				if matches != None:
-					function_list.append(line.strip())
-		return function_list
-
-	def findCpp(self, filepath):
-		function_list = []
-		#print(filepath)
-		with open(filepath, 'r', encoding="ascii", errors="surrogateescape") as f:
-			for line in f:
-				matches = self.cppFuncPattern.match(line)
 				if matches != None:
 					function_list.append(line.strip())
 		return function_list

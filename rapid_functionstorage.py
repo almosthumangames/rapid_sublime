@@ -7,8 +7,8 @@ class Method:
 	
 	def __init__(self, name, signature, filename):
 		self._name = name
-		self._filename = filename
 		self._signature = signature
+		self._filename = filename
 
 	#function name
 	def name(self):
@@ -24,12 +24,22 @@ class Method:
 
 class FunctionDefinition:
 	_function = ""
+	_description = None
 
 	def __init__(self, function):
 		self._function = function
 
+	def addDescription(self, desc):
+		if self._description:
+			self._description = self._description + "\n" + desc
+		else:
+			self._description = desc
+
 	def getFunction(self):
 		return self._function
+
+	def getDescription(self):
+		return self._description
 
 class RapidFunctionStorage():
 	#autocomplete (ctrl+space)
@@ -103,7 +113,7 @@ class RapidFunctionStorage():
 				for key in RapidFunctionStorage.findFuncMap:
 					funcs = RapidFunctionStorage.findFuncMap[key]
 					for func in funcs:
-						RapidFunctionStorage.findFuncs.append(func.getFunction())
+						RapidFunctionStorage.findFuncs.append(func)
 			else:
 				print("rapid_functionstorage.py: INTERNAL ERROR: findFuncMap length is 0!")
 		return RapidFunctionStorage.findFuncs

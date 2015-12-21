@@ -86,10 +86,13 @@ class RapidFind2Command(sublime_plugin.TextCommand):
 			print("Error: Function definitions have been lost, alt+l collects them again")
 		else:
 			for func in functions:
-				match = re.search(pattern, func.lower())
+				funcName = func.getFunction()
+				match = re.search(pattern, funcName.lower())
 				if match != None:
-					func = func.replace("///", "").strip()
-					RapidOutputView.printMessage(func)
+					funcName = funcName.replace("///", "").strip()
+					RapidOutputView.printMessage(funcName)
+					if func.getDescription() != None:
+						RapidOutputView.printMessage(func.getDescription())
 					self.functionFound = True
 
 	############################################
@@ -111,8 +114,11 @@ class RapidFind2Command(sublime_plugin.TextCommand):
 			print("Error: Function definitions have been lost, alt+l collects them again")
 		else:
 			for func in functions:
-				match = re.search(search_pattern, func.lower())
+				funcName = func.getFunction()
+				match = re.search(search_pattern, funcName.lower())
 				if match != None:
-					func = func.strip()
-					RapidOutputView.printMessage(func)
+					funcName = funcName.strip()
+					RapidOutputView.printMessage(funcName)
+					if func.getDescription() != None:
+						RapidOutputView.printMessage(func.getDescription())
 					self.functionFound = True

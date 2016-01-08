@@ -124,7 +124,9 @@ class RapidCollectorThread(threading.Thread):
 												#print("DESC: " + description)
 												findFunctions[-1].addDescription(description)
 
-							if name and signature:
+							if name:
+								if signature == None:
+									signature = ""
 								functions.append(Method(name, signature, ""))
 								findFunctions.append(FunctionDefinition(line))
 

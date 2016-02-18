@@ -77,10 +77,10 @@ class RapidOutputViewClearCommand(sublime_plugin.TextCommand):
 			view.erase(edit, sublime.Region(0, view.size()))
 			view.set_read_only(True)
 
-class RapidOutputViewListener(sublime_plugin.EventListener):
-	def on_close(self, view):
-		if view.name() == RapidOutputView.name:
-			sublime.active_window().set_layout( {"cols": [0.0, 1.0], "rows": [0.0, 1.0], "cells": [[0,0,1,1]] } )
+# class RapidOutputViewListener(sublime_plugin.EventListener):
+# 	def on_close(self, view):
+# 		if view.name() == RapidOutputView.name:
+# 			sublime.active_window().set_layout( {"cols": [0.0, 1.0], "rows": [0.0, 1.0], "cells": [[0,0,1,1]] } )
 
 class RapidDoubleClick(sublime_plugin.WindowCommand):
 	def run(self):

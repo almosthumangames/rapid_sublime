@@ -220,7 +220,8 @@ class RapidCollector(sublime_plugin.EventListener):
 	def on_query_completions(self, view, prefix, locations):
 		if RapidCollector.applyAutoComplete:
 			RapidCollector.applyAutoComplete = False
-			if view.file_name() != None and '.lua' in view.file_name():
+			syntax = view.settings().get('syntax')
+			if syntax != None and 'Lua' in syntax:
 				return RapidFunctionStorage.getAutoCompleteList(prefix)
 		completions = []
 		return (completions, sublime.INHIBIT_EXPLICIT_COMPLETIONS)

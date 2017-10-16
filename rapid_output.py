@@ -13,14 +13,14 @@ class RapidOutputView():
 
 	@classmethod
 	def getOutputView(self, create):
-		for window in sublime.windows():
-			for view in window.views():
-				if view.name() == RapidOutputView.name:
-					return view
+		window = sublime.active_window()
+
+		for view in window.views():
+			if view.name() == RapidOutputView.name:
+				return view
 
 		# create new view
 		if create:
-			window = sublime.active_window()
 			activeView = window.active_view()
 			groups = window.num_groups()
 			if groups < 2:
@@ -108,92 +108,33 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 
 				#split on the last occurence of ':' 
 				test = file_path_name_row.rsplit(':', 1)
-				file_name = test[0]
+				file_name = test[0].strip()
 				file_row = test[1]
 
 				#RapidOutputView.printMessage("file_name: " + file_name)
 				#RapidOutputView.printMessage("file_row: " + file_row)
-				file_name = file_name.strip()
-
-				file_path_exists = False
-				if file_name.find('/') != -1:
-					file_path_exists = True
-					file_name = file_name.lower()
-
-				# RapidOutputView.printMessage("Double click result: " + file_name + "   " + file_row +"\n")
-			
+	
 				path_found = False
 				path = None
-				file_window = None
 		
-				#check file against file path
-				if file_path_exists:
-					# check if file is already open in the window
-					open_views = sublime.active_window().views()
-					for open_view in open_views:
-						open_file_name = ""
-						if open_view.file_name() != None:
-							open_file_name = open_view.file_name().replace('\\', '/').lower()
-							#RapidOutputView.printMessage("open file: " + open_file_name)
-
-						if open_view.file_name() != None and open_file_name == file_name:
-							path = open_view.file_name()
-							view = sublime.active_window().open_file(path+":"+file_row, sublime.ENCODED_POSITION)
-							sublime.active_window().focus_view(view)
-							return
-
-					# scan all opened folders of current window
-					for folder in self.window.folders():
-						candidate = os.path.join(folder, file_name)
-						if os.path.isfile(candidate):
-							path_found = True
-							file_window = self.window
-							path = candidate
-				else:
-					# check if file is already open in the window
-					open_views = sublime.active_window().views()
-					for open_view in open_views:
-						if open_view.file_name() != None and open_view.file_name().endswith(file_name):
-							path = open_view.file_name()
-							view = sublime.active_window().open_file(path+":"+file_row, sublime.ENCODED_POSITION)
-							sublime.active_window().focus_view(view)
-							return
-
-					# scan all the folders if view not found on window
-					for window in sublime.windows():
-						for folder in window.folders():			
-							for root, dirs, files in os.walk(folder):
-								if path_found:
-									break
-								for name in files:
-									if name == file_name:
-										path = os.path.abspath(os.path.join(root, name))
-										path_found = True
-										file_window = window
-										break
-
-				if not path_found:
-					RapidOutputView.printMessage(file_name + " not found in the project folders!")
-					return
-				
-				view = None
-				for window in sublime.windows():
-					view = window.find_open_file(path)
-					if view != None:
-						window.open_file(path+":"+file_row, sublime.ENCODED_POSITION)
-						window.focus_view(view)
+				# scan all opened folders of current window
+				for folder in self.window.folders():
+					candidate = os.path.join(folder, file_name)
+					if os.path.isfile(candidate):
+						path_found = True
+						path = candidate
 						break
 
-				if view == None:
-					sublime.active_window().focus_group(0)
-					view = file_window.open_file(path+":"+file_row, sublime.ENCODED_POSITION)
-			# else:
-			# 	print("File name and row not found from line: " + line)
-		# else:
-		#  	print("no output view or analyze_result!")
-		#  	print("View name: " + view.name())
-		#  	print("View filename: " + view.file_name())
-		#  	print(os.path.basename(view.file_name()))
+				if path_found:
+					view = self.window.find_open_file(path)
+					if view != None:
+						self.window.open_file(path+":"+file_row, sublime.ENCODED_POSITION)
+						self.window.focus_view(view)
+					else:
+						self.window.focus_group(0)
+						view = self.window.open_file(path+":"+file_row, sublime.ENCODED_POSITION)
+				else:
+					RapidOutputView.printMessage(file_name + " not found in the project folders!")
 
 class RapidCloseOutputViewCommand(sublime_plugin.TextCommand):
 	def run(self, edit):

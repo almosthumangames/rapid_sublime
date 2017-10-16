@@ -13,14 +13,14 @@ class RapidOutputView():
 
 	@classmethod
 	def getOutputView(self, create):
-		window = sublime.active_window()
-
-		for view in window.views():
-			if view.name() == RapidOutputView.name:
-				return view
+		for window in sublime.windows():
+			for view in window.views():
+				if view.name() == RapidOutputView.name:
+					return view
 
 		# create new view
 		if create:
+			window = sublime.active_window()
 			activeView = window.active_view()
 			groups = window.num_groups()
 			if groups < 2:
@@ -115,24 +115,29 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 				#RapidOutputView.printMessage("file_row: " + file_row)
 	
 				path_found = False
+				window_found = self.window
 				path = None
 		
-				# scan all opened folders of current window
-				for folder in self.window.folders():
-					candidate = os.path.join(folder, file_name)
-					if os.path.isfile(candidate):
-						path_found = True
-						path = candidate
-						break
+				# scan all opened folders of *all* windows
+				# we need scan other windows, because the rapid output view
+				# can be detached from the window, where the project is loaded
+				for window in sublime.windows():
+					for folder in window.folders():
+						candidate = os.path.join(folder, file_name)
+						if os.path.isfile(candidate):
+							path_found = True
+							window_found = window
+							path = candidate
+							break
 
 				if path_found:
-					view = self.window.find_open_file(path)
+					view = window_found.find_open_file(path)
 					if view != None:
-						self.window.open_file(path+":"+file_row, sublime.ENCODED_POSITION)
-						self.window.focus_view(view)
+						window_found.open_file(path+":"+file_row, sublime.ENCODED_POSITION)
+						window_found.focus_view(view)
 					else:
-						self.window.focus_group(0)
-						view = self.window.open_file(path+":"+file_row, sublime.ENCODED_POSITION)
+						window_found.focus_group(0)
+						view = window_found.open_file(path+":"+file_row, sublime.ENCODED_POSITION)
 				else:
 					RapidOutputView.printMessage(file_name + " not found in the project folders!")
 

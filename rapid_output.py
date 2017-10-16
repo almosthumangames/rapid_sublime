@@ -120,7 +120,7 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 					file_path_exists = True
 					file_name = file_name.lower()
 
-				# RapidOutputView.printMessage("Double click result: " + file_path + "   " + file_name + "   " + file_row +"\n")
+				# RapidOutputView.printMessage("Double click result: " + file_name + "   " + file_row +"\n")
 			
 				path_found = False
 				path = None
@@ -142,18 +142,13 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 							sublime.active_window().focus_view(view)
 							return
 
-					# scan all the folders if view not found on window
-					for window in sublime.windows():
-						for folder in window.folders():			
-							for root, dirs, files in os.walk(folder):
-								if path_found:
-									break
-								for name in files:
-									path = os.path.abspath(os.path.join(root, name)).replace('\\', '/').lower()
-									if path == file_name:
-										path_found = True
-										file_window = window
-										break
+					# scan all opened folders of current window
+					for folder in self.window.folders():
+						candidate = os.path.join(folder, file_name)
+						if os.path.isfile(candidate):
+							path_found = True
+							file_window = self.window
+							path = candidate
 				else:
 					# check if file is already open in the window
 					open_views = sublime.active_window().views()

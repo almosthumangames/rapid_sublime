@@ -114,7 +114,6 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 				#RapidOutputView.printMessage("file_name: " + file_name)
 				#RapidOutputView.printMessage("file_row: " + file_row)
 	
-				path_found = False
 				window_found = self.window
 				path = None
 		
@@ -125,12 +124,23 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 					for folder in window.folders():
 						candidate = os.path.join(folder, file_name)
 						if os.path.isfile(candidate):
-							path_found = True
 							window_found = window
 							path = candidate
 							break
 
-				if path_found:
+				if path == None:
+					# exact match was not found. Try recursing the subdirectories of folders opened in Sublime
+					for window in sublime.windows():
+						for folder in window.folders():
+							for root, subfolders, files in os.walk(folder):
+								for subfolder in subfolders:
+									candidate = os.path.join(root, subfolder, file_name)
+									if os.path.isfile(candidate):
+										window_found = window
+										path = candidate
+										break
+
+				if path != None:
 					view = window_found.find_open_file(path)
 					if view != None:
 						window_found.open_file(path+":"+file_row, sublime.ENCODED_POSITION)

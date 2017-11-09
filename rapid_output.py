@@ -91,30 +91,39 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 			r = sel[0]
 			s = view.line(r)
 			line = view.substr(s).replace('\\', '/')
-			
-			#file_name_and_row = re.search(r'[\w\.-]+.lua:\d{1,16}', line) #old implementation
-			file_name_and_row = re.search(r'[^ ]+lua[^ ]+', line)
+
+			# TODO extract parsing to a separate, unit testable function
+			file_name_and_row = None
+			# this pattern matches these:
+			# main.lua:198: missions.lua:3: data/missions/mission_base.lua:1: unexpected symbol near '='
+			# main.lua:198: in function 'init'
+			# C:/jp/shinobi/lua/fwk.lua:42: in function 'start_app'
+			groups = re.findall(r"([-/\w\d:]+\.lua:\d+)", line)
+			if len(groups) > 0:
+				file_name_and_row = groups[-1]
 
 			# try to find hlsl file
 			if file_name_and_row == None:
-				file_name_and_row = re.search(r'[^ ]+hlsl[^ ]+', line)
+				found_text = re.search(r'[^ ]+hlsl[^ ]+', line)
+				if found_text != None:
+					file_name_and_row = found_text.group(0)
 
 			if file_name_and_row:
-				file_path_name_row = file_name_and_row.group(0)
-				if file_path_name_row.endswith(":"):
-					file_path_name_row = file_path_name_row[:-1]
+				
+				# TODO tidy up hlsl pattern so that this is not required (lua version doesn't need this)
+				if file_name_and_row.endswith(":"):
+					file_name_and_row = file_name_and_row[:-1]
 				
 				view.run_command("expand_selection", {"to": "line"})
 
 				#split on the last occurence of ':' 
-				test = file_path_name_row.rsplit(':', 1)
+				test = file_name_and_row.rsplit(':', 1)
 				file_name = test[0].strip()
 				file_row = test[1]
 
 				#RapidOutputView.printMessage("file_name: " + file_name)
 				#RapidOutputView.printMessage("file_row: " + file_row)
 	
-				path_found = False
 				window_found = self.window
 				path = None
 		
@@ -125,12 +134,23 @@ class RapidDoubleClick(sublime_plugin.WindowCommand):
 					for folder in window.folders():
 						candidate = os.path.join(folder, file_name)
 						if os.path.isfile(candidate):
-							path_found = True
 							window_found = window
 							path = candidate
 							break
 
-				if path_found:
+				if path == None:
+					# exact match was not found. Try recursing the subdirectories of folders opened in Sublime
+					for window in sublime.windows():
+						for folder in window.folders():
+							for root, subfolders, files in os.walk(folder):
+								for subfolder in subfolders:
+									candidate = os.path.join(root, subfolder, file_name)
+									if os.path.isfile(candidate):
+										window_found = window
+										path = candidate
+										break
+
+				if path != None:
 					view = window_found.find_open_file(path)
 					if view != None:
 						window_found.open_file(path+":"+file_row, sublime.ENCODED_POSITION)

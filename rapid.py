@@ -251,7 +251,11 @@ class RapidEvalCommand(sublime_plugin.TextCommand):
 				line = region #get only the selected area
 				file_row_str = str(current_row + 1)
 
-			file_name = self.view.file_name() or ""	
+			file_name = ""
+
+			if self.view.file_name() != None:
+				file_name = self.view.file_name().split("\\")[-1]
+			
 			line_str = self.view.substr(line)
 			line_contents = "@" + file_name + ":" + file_row_str + "\n" + line_str + "\000"
 			

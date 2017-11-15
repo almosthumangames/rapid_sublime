@@ -261,6 +261,9 @@ class RapidEvalCommand(sublime_plugin.TextCommand):
 						if file_name.startswith(folder):
 							file_name = os.path.relpath(file_name, folder)
 
+			# replace possible backslashes with forward ones
+			file_name = file_name.replace("\\", "/")
+
 			line_str = self.view.substr(line)
 			line_contents = "@" + file_name + ":" + file_row_str + "\n" + line_str + "\000"
 			

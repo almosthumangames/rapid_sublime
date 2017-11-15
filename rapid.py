@@ -251,19 +251,25 @@ class RapidEvalCommand(sublime_plugin.TextCommand):
 				line = region #get only the selected area
 				file_row_str = str(current_row + 1)
 
-			file_name = ""
-
-			if self.view.file_name() != None:
-				file_name = self.view.file_name().split("\\")[-1]
+			file_name = self.view.file_name() or ""
 			
+			if len(file_name) > 0:
+				# we always want to send only relative paths if possible, so
+				# try to convert the filename to a relative path
+				for window in sublime.windows():
+					for folder in window.folders():
+						if file_name.startswith(folder):
+							file_name = os.path.relpath(file_name, folder)
+
 			line_str = self.view.substr(line)
 			line_contents = "@" + file_name + ":" + file_row_str + "\n" + line_str + "\000"
 			
 			#print("------")
-			#print("sending contents:")
+			#print("Sending: ", file_name)
+			#print("Sending contents:")
 			#print(line_contents)
+			#print("------")
 			return line_contents
-
 
 class RapidCheckServerAndStartupProjectCommand(sublime_plugin.WindowCommand):
 	def run(self):
